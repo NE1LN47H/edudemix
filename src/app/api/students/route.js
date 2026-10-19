@@ -4,7 +4,7 @@ import {
   listStudents,
 } from "@/controllers/studentController";
 
-import { requireCentre } from "@/lib/auth";
+import { getAuthenticatedCentre } from "@/lib/auth";
 
 function unauthorizedResponse() {
   return Response.json(
@@ -17,21 +17,45 @@ function unauthorizedResponse() {
 }
 
 export async function GET(request) {
-  const centre = await requireCentre();
+  try {
+    const centre = await getAuthenticatedCentre();
 
-  if (!centre) {
-    return unauthorizedResponse();
+    if (!centre) {
+      return unauthorizedResponse();
+    }
+
+    return await listStudents(request, centre.id);
+  } catch (error) {
+    console.error("GET /api/students:", error);
+
+    return Response.json(
+      {
+        success: false,
+        message: "An unexpected error occurred",
+      },
+      { status: 500 }
+    );
   }
-
-  return listStudents(request, centre.id);
 }
 
 export async function POST(request) {
-  const centre = await requireCentre();
+  try {
+    const centre = await getAuthenticatedCentre();
 
-  if (!centre) {
-    return unauthorizedResponse();
+    if (!centre) {
+      return unauthorizedResponse();
+    }
+
+    return await addStudent(request, centre.id);
+  } catch (error) {
+    console.error("POST /api/students:", error);
+
+    return Response.json(
+      {
+        success: false,
+        message: "An unexpected error occurred",
+      },
+      { status: 500 }
+    );
   }
-
-  return addStudent(request, centre.id);
 }
