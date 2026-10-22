@@ -20,7 +20,7 @@ async function ProtectedFees() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="page-loading">Loading fees...</div>}>
+    <Suspense fallback={null}>
       <ProtectedFees />
     </Suspense>
   );

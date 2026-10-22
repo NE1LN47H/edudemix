@@ -1,12 +1,38 @@
 "use client";
 
-import { Power, Trash2 } from "lucide-react";
+import { Power, Trash2, Shield, GraduationCap, Calculator, Crown } from "lucide-react";
 
 export default function StaffTable({
   staff,
   onToggleStatus,
   onDeleteStaff,
 }) {
+  function getRoleIcon(role) {
+    switch (role) {
+      case "owner":
+        return <Crown size={12} />;
+      case "admin":
+        return <Shield size={12} />;
+      case "accountant":
+        return <Calculator size={12} />;
+      default:
+        return <GraduationCap size={12} />;
+    }
+  }
+
+  function getAvatarClass(role) {
+    switch (role) {
+      case "owner":
+        return "staff-avatar-owner";
+      case "admin":
+        return "staff-avatar-admin";
+      case "accountant":
+        return "staff-avatar-accountant";
+      default:
+        return "staff-avatar-teacher";
+    }
+  }
+
   return (
     <div className="students-table-wrap">
       <table className="students-table">
@@ -26,20 +52,30 @@ export default function StaffTable({
             <tr key={user._id}>
               <td>
                 <div className="students-person">
-                  <div className="students-avatar">
+                  <div className={`students-avatar ${getAvatarClass(user.role)}`}>
                     {(user.name || "?").charAt(0).toUpperCase()}
                   </div>
-                  <span className="students-person-name">
-                    {user.name}
-                  </span>
+                  <div className="students-person-info">
+                    <span className="students-person-name">
+                      {user.name}
+                    </span>
+                    {user.role === "owner" && (
+                      <span style={{ fontSize: "10px", color: "#9d174d", fontWeight: 600 }}>
+                        Primary Institute Owner
+                      </span>
+                    )}
+                  </div>
                 </div>
               </td>
 
-              <td>{user.email}</td>
+              <td style={{ color: "#475569", fontSize: "13px" }}>
+                {user.email}
+              </td>
 
               <td>
                 <span className={`role-pill role-${user.role}`}>
-                  {user.role}
+                  {getRoleIcon(user.role)}
+                  <span>{user.role}</span>
                 </span>
               </td>
 
@@ -54,7 +90,7 @@ export default function StaffTable({
                 </span>
               </td>
 
-              <td>
+              <td style={{ color: "#64748b", fontSize: "12px" }}>
                 {new Date(user.createdAt).toLocaleDateString("en-IN", {
                   day: "2-digit",
                   month: "short",
@@ -70,8 +106,8 @@ export default function StaffTable({
                       className="student-action-btn"
                       title={
                         user.status === "active"
-                          ? "Disable account"
-                          : "Activate account"
+                          ? "Disable account access"
+                          : "Re-enable account access"
                       }
                       onClick={() => onToggleStatus(user)}
                     >
@@ -88,8 +124,8 @@ export default function StaffTable({
                     </button>
                   </div>
                 ) : (
-                  <span style={{ fontSize: "11px", color: "#888" }}>
-                    Primary owner
+                  <span style={{ fontSize: "11px", color: "#94a3b8", fontStyle: "italic" }}>
+                    Protected
                   </span>
                 )}
               </td>

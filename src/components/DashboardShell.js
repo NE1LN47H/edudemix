@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -74,18 +74,22 @@ export default function DashboardShell({ children }) {
   const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
+    let ignore = false;
     async function loadUser() {
       try {
         const res = await fetch("/api/auth/session", { cache: "no-store" });
         const data = await res.json();
-        if (data.authenticated && data.user) {
+        if (!ignore && data.authenticated && data.user) {
           setUserInfo(data.user);
         }
-      } catch (err) {
+      } catch {
         // Fallback gracefully
       }
     }
     loadUser();
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   function isActive(href) {

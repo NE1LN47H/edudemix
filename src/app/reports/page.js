@@ -20,7 +20,7 @@ async function ProtectedReports() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="page-loading">Generating reports...</div>}>
+    <Suspense fallback={null}>
       <ProtectedReports />
     </Suspense>
   );

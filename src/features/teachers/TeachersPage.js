@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { GraduationCap, Plus, LoaderCircle } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import { GraduationCap, Plus, LoaderCircle, Search } from "lucide-react";
+import StaffMetrics from "./components/StaffMetrics";
 import StaffTable from "./components/StaffTable";
 import StaffModal from "./components/StaffModal";
 import NoticeBanner from "@/components/ui/NoticeBanner";
@@ -19,6 +20,8 @@ export default function TeachersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
 
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(EMPTY_STAFF_FORM);
@@ -118,6 +121,22 @@ export default function TeachersPage() {
     }
   }
 
+  const filteredStaff = useMemo(() => {
+    return staff.filter((member) => {
+      const matchesSearch =
+        search === "" ||
+        member.name?.toLowerCase().includes(search.toLowerCase()) ||
+        member.email?.toLowerCase().includes(search.toLowerCase());
+
+      const matchesRole =
+        roleFilter === "all" ||
+        member.role === roleFilter ||
+        (roleFilter === "admin" && member.role === "owner");
+
+      return matchesSearch && matchesRole;
+    });
+  }, [staff, search, roleFilter]);
+
   return (
     <div className="teachers-container">
       <section className="page-heading">
@@ -125,7 +144,7 @@ export default function TeachersPage() {
           <div className="eyebrow">WORKSPACE MANAGEMENT</div>
           <h1>Staff & Teachers</h1>
           <p className="page-description">
-            Manage your teaching staff, administrators, and workspace roles.
+            Manage your teaching faculty, administrators, accountants, and workspace access roles.
           </p>
         </div>
 
@@ -142,6 +161,8 @@ export default function TeachersPage() {
         </button>
       </section>
 
+      <StaffMetrics staff={staff} />
+
       <NoticeBanner
         type="success"
         message={success}
@@ -154,33 +175,63 @@ export default function TeachersPage() {
       />
 
       <section className="students-panel">
-        <div className="students-toolbar">
-          <div>
-            <h2>Staff directory</h2>
-            <p className="students-subtitle">
-              {staff.length} registered members in this centre
-            </p>
+        <div className="staff-toolbar">
+          <div className="staff-search-box">
+            <Search size={15} className="staff-search-icon" />
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="staff-search-input"
+            />
+          </div>
+
+          <div className="staff-role-filters">
+            <button
+              type="button"
+              className={`staff-filter-btn ${roleFilter === "all" ? "active" : ""}`}
+              onClick={() => setRoleFilter("all")}
+            >
+              All ({staff.length})
+            </button>
+            <button
+              type="button"
+              className={`staff-filter-btn ${roleFilter === "teacher" ? "active" : ""}`}
+              onClick={() => setRoleFilter("teacher")}
+            >
+              Teachers ({staff.filter((s) => s.role === "teacher").length})
+            </button>
+            <button
+              type="button"
+              className={`staff-filter-btn ${roleFilter === "admin" ? "active" : ""}`}
+              onClick={() => setRoleFilter("admin")}
+            >
+              Admins ({staff.filter((s) => s.role === "admin" || s.role === "owner").length})
+            </button>
+            <button
+              type="button"
+              className={`staff-filter-btn ${roleFilter === "accountant" ? "active" : ""}`}
+              onClick={() => setRoleFilter("accountant")}
+            >
+              Accountants ({staff.filter((s) => s.role === "accountant").length})
+            </button>
           </div>
         </div>
 
-        {loading ? (
-          <div className="students-state">
-            <LoaderCircle className="students-spinner" size={25} />
-            <p>Loading staff directory...</p>
-          </div>
-        ) : staff.length === 0 ? (
+        {loading ? null : filteredStaff.length === 0 ? (
           <div className="students-state">
             <div className="students-state-icon">
               <GraduationCap size={24} />
             </div>
-            <h3>No additional staff added</h3>
+            <h3>No matching staff members found</h3>
             <p>
-              Add teachers or administrators to collaborate in your centre workspace.
+              Try clearing your search query or role filter.
             </p>
           </div>
         ) : (
           <StaffTable
-            staff={staff}
+            staff={filteredStaff}
             onToggleStatus={handleToggleStatus}
             onDeleteStaff={handleDeleteStaff}
           />

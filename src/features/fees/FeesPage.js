@@ -273,12 +273,7 @@ export default function FeesPage() {
           }}
         />
 
-        {loading ? (
-          <div className="students-state">
-            <LoaderCircle className="students-spinner" size={25} />
-            <p>Loading fee records...</p>
-          </div>
-        ) : fees.length === 0 ? (
+        {loading ? null : fees.length === 0 ? (
           <div className="students-state">
             <div className="students-state-icon">
               <CreditCard size={24} />

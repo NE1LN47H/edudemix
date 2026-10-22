@@ -16,7 +16,7 @@ async function ProtectedBatches() {
 
 export default function BatchesRoute() {
   return (
-    <Suspense fallback={<div className="page-loading">Loading batches...</div>}>
+    <Suspense fallback={null}>
       <ProtectedBatches />
     </Suspense>
   );

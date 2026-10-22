@@ -20,7 +20,7 @@ async function ProtectedAttendance() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="page-loading">Loading attendance...</div>}>
+    <Suspense fallback={null}>
       <ProtectedAttendance />
     </Suspense>
   );

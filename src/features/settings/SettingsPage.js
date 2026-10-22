@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Building2, UserCircle, ShieldCheck } from "lucide-react";
 import NoticeBanner from "@/components/ui/NoticeBanner";
 import CentreProfileCard from "./components/CentreProfileCard";
 import UserProfileCard from "./components/UserProfileCard";
+import WorkspaceAccessCard from "./components/WorkspaceAccessCard";
 import "./SettingsPage.css";
 
 export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState("centre");
+
   const [centreForm, setCentreForm] = useState({
     name: "",
     email: "",
@@ -94,7 +97,7 @@ export default function SettingsPage() {
         throw new Error(result.message || "Failed to update centre details");
       }
 
-      setSuccess("Centre workspace details updated successfully.");
+      setSuccess("Coaching centre workspace profile updated successfully.");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -124,7 +127,7 @@ export default function SettingsPage() {
         throw new Error(result.message || "Failed to update profile");
       }
 
-      setSuccess("Your account profile was updated successfully.");
+      setSuccess("Your account credentials have been updated successfully.");
       setProfileForm((p) => ({ ...p, newPassword: "" }));
     } catch (err) {
       setError(err.message);
@@ -134,12 +137,7 @@ export default function SettingsPage() {
   }
 
   if (loading) {
-    return (
-      <div className="students-state">
-        <LoaderCircle className="students-spinner" size={28} />
-        <p>Loading workspace configuration...</p>
-      </div>
-    );
+    return null;
   }
 
   return (
@@ -149,7 +147,7 @@ export default function SettingsPage() {
           <div className="eyebrow">SETTINGS & PREFERENCES</div>
           <h1>Workspace Settings</h1>
           <p className="page-description">
-            Configure coaching centre identity, contact details, and account security.
+            Manage your coaching institute identity, user credentials, and security controls.
           </p>
         </div>
       </section>
@@ -165,19 +163,54 @@ export default function SettingsPage() {
         onDismiss={() => setError("")}
       />
 
-      <CentreProfileCard
-        centreForm={centreForm}
-        onChange={setCentreForm}
-        onSubmit={handleSaveCentre}
-        saving={savingCentre}
-      />
+      <div className="settings-nav-tabs">
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === "centre" ? "active" : ""}`}
+          onClick={() => setActiveTab("centre")}
+        >
+          <Building2 size={15} />
+          Centre Profile
+        </button>
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === "user" ? "active" : ""}`}
+          onClick={() => setActiveTab("user")}
+        >
+          <UserCircle size={15} />
+          My Account
+        </button>
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === "security" ? "active" : ""}`}
+          onClick={() => setActiveTab("security")}
+        >
+          <ShieldCheck size={15} />
+          Security & Access
+        </button>
+      </div>
 
-      <UserProfileCard
-        profileForm={profileForm}
-        onChange={setProfileForm}
-        onSubmit={handleSaveProfile}
-        saving={savingProfile}
-      />
+      {activeTab === "centre" && (
+        <CentreProfileCard
+          centreForm={centreForm}
+          onChange={setCentreForm}
+          onSubmit={handleSaveCentre}
+          saving={savingCentre}
+        />
+      )}
+
+      {activeTab === "user" && (
+        <UserProfileCard
+          profileForm={profileForm}
+          onChange={setProfileForm}
+          onSubmit={handleSaveProfile}
+          saving={savingProfile}
+        />
+      )}
+
+      {activeTab === "security" && (
+        <WorkspaceAccessCard slug={centreForm.slug} />
+      )}
     </div>
   );
 }

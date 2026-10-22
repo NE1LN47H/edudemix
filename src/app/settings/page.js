@@ -20,7 +20,7 @@ async function ProtectedSettings() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="page-loading">Loading settings...</div>}>
+    <Suspense fallback={null}>
       <ProtectedSettings />
     </Suspense>
   );

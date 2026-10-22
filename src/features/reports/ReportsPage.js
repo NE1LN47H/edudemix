@@ -44,12 +44,7 @@ export default function ReportsPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="students-state">
-        <LoaderCircle className="students-spinner" size={28} />
-        <p>Compiling analytics and reports...</p>
-      </div>
-    );
+    return null;
   }
 
   if (error || !data) {

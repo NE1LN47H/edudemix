@@ -16,7 +16,7 @@ async function ProtectedStudents() {
 
 export default function StudentsRoute() {
   return (
-    <Suspense fallback={<div className="page-loading">Loading students...</div>}>
+    <Suspense fallback={null}>
       <ProtectedStudents />
     </Suspense>
   );

@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Trash2,
   AlertTriangle,
+  AlertCircle,
 } from "lucide-react";
 import "./super-admin.css";
 
@@ -35,6 +36,7 @@ export default function SuperAdminPortal() {
   // Modal & form states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [modalError, setModalError] = useState("");
   const [createdResult, setCreatedResult] = useState(null);
   const [copied, setCopied] = useState(false);
 
@@ -145,7 +147,7 @@ export default function SuperAdminPortal() {
     e.preventDefault();
     try {
       setSubmitting(true);
-      setError("");
+      setModalError("");
       const res = await fetch("/api/super-admin/centres", {
         method: "POST",
         headers: {
@@ -179,7 +181,7 @@ export default function SuperAdminPortal() {
         password: "",
       });
     } catch (err) {
-      setError(err.message);
+      setModalError(err.message || "Unable to register coaching centre");
     } finally {
       setSubmitting(false);
     }
@@ -394,6 +396,7 @@ Please log in and update your password under Workspace Settings.`;
             className="saas-primary-btn"
             onClick={() => {
               setCreatedResult(null);
+              setModalError("");
               setIsModalOpen(true);
             }}
           >
@@ -603,8 +606,16 @@ Please log in and update your password under Workspace Settings.`;
 
       {/* Centre Registration Modal */}
       {isModalOpen && (
-        <div className="students-modal-backdrop" role="dialog">
-          <div className="saas-credentials-modal-box">
+        <div
+          className="saas-modal-backdrop"
+          role="dialog"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !submitting) {
+              setIsModalOpen(false);
+            }
+          }}
+        >
+          <div className="saas-modal-card">
             {createdResult ? (
               <div>
                 <div style={{ textAlign: "center", marginBottom: 16 }}>
@@ -655,7 +666,7 @@ Please log in and update your password under Workspace Settings.`;
                   </button>
                   <button
                     type="button"
-                    className="students-secondary-button"
+                    className="saas-btn-cancel"
                     onClick={() => {
                       setIsModalOpen(false);
                       setCreatedResult(null);
@@ -667,25 +678,33 @@ Please log in and update your password under Workspace Settings.`;
               </div>
             ) : (
               <div>
-                <div className="students-modal-header">
+                <div className="saas-modal-header">
                   <div>
                     <h2>Register Coaching Centre</h2>
-                    <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+                    <p>
                       Provision a new tenant workspace and create the institute owner account.
                     </p>
                   </div>
                   <button
                     type="button"
-                    className="students-close-button"
+                    className="saas-modal-close"
                     onClick={() => setIsModalOpen(false)}
+                    disabled={submitting}
                   >
                     <X size={18} />
                   </button>
                 </div>
 
+                {modalError && (
+                  <div className="saas-modal-error">
+                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                    <span>{modalError}</span>
+                  </div>
+                )}
+
                 <form onSubmit={handleRegisterCentre}>
-                  <div className="students-form-grid">
-                    <label className="students-form-field">
+                  <div className="saas-form-grid">
+                    <div className="saas-form-field">
                       <span>Coaching Centre Name *</span>
                       <input
                         type="text"
@@ -694,9 +713,9 @@ Please log in and update your password under Workspace Settings.`;
                         onChange={handleNameChange}
                         required
                       />
-                    </label>
+                    </div>
 
-                    <label className="students-form-field">
+                    <div className="saas-form-field">
                       <span>Workspace Identifier (Slug) *</span>
                       <input
                         type="text"
@@ -712,9 +731,10 @@ Please log in and update your password under Workspace Settings.`;
                         title="Lowercase letters, numbers, and hyphens only"
                         required
                       />
-                    </label>
+                      <small>Used for direct institute sign-in</small>
+                    </div>
 
-                    <label className="students-form-field">
+                    <div className="saas-form-field">
                       <span>Owner / Principal Name *</span>
                       <input
                         type="text"
@@ -725,9 +745,9 @@ Please log in and update your password under Workspace Settings.`;
                         }
                         required
                       />
-                    </label>
+                    </div>
 
-                    <label className="students-form-field">
+                    <div className="saas-form-field">
                       <span>Owner Sign-in Email *</span>
                       <input
                         type="email"
@@ -738,9 +758,9 @@ Please log in and update your password under Workspace Settings.`;
                         }
                         required
                       />
-                    </label>
+                    </div>
 
-                    <label className="students-form-field">
+                    <div className="saas-form-field">
                       <span>Centre Contact Phone</span>
                       <input
                         type="tel"
@@ -750,9 +770,9 @@ Please log in and update your password under Workspace Settings.`;
                           setForm((p) => ({ ...p, phone: e.target.value }))
                         }
                       />
-                    </label>
+                    </div>
 
-                    <label className="students-form-field">
+                    <div className="saas-form-field">
                       <span>Initial Password *</span>
                       <input
                         type="text"
@@ -764,13 +784,14 @@ Please log in and update your password under Workspace Settings.`;
                         minLength={8}
                         required
                       />
-                    </label>
+                      <small>Minimum 8 characters</small>
+                    </div>
                   </div>
 
-                  <div className="students-modal-actions" style={{ marginTop: 24 }}>
+                  <div className="saas-modal-actions">
                     <button
                       type="button"
-                      className="students-secondary-button"
+                      className="saas-btn-cancel"
                       onClick={() => setIsModalOpen(false)}
                       disabled={submitting}
                     >
@@ -801,9 +822,17 @@ Please log in and update your password under Workspace Settings.`;
 
       {/* Centre Deletion Confirmation Modal */}
       {deletingCentre && (
-        <div className="students-modal-backdrop" role="dialog">
-          <div className="saas-credentials-modal-box">
-            <div className="students-modal-header">
+        <div
+          className="saas-modal-backdrop"
+          role="dialog"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeleting) {
+              setDeletingCentre(null);
+            }
+          }}
+        >
+          <div className="saas-modal-card">
+            <div className="saas-modal-header">
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div
                   style={{
@@ -821,14 +850,14 @@ Please log in and update your password under Workspace Settings.`;
                 </div>
                 <div>
                   <h2 style={{ color: "#991b1b" }}>Delete Coaching Centre</h2>
-                  <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+                  <p>
                     Irreversible action — permanently erase tenant workspace
                   </p>
                 </div>
               </div>
               <button
                 type="button"
-                className="students-close-button"
+                className="saas-modal-close"
                 onClick={() => setDeletingCentre(null)}
                 disabled={isDeleting}
               >
@@ -877,10 +906,10 @@ Please log in and update your password under Workspace Settings.`;
               />
             </div>
 
-            <div className="students-modal-actions">
+            <div className="saas-modal-actions">
               <button
                 type="button"
-                className="students-secondary-button"
+                className="saas-btn-cancel"
                 onClick={() => setDeletingCentre(null)}
                 disabled={isDeleting}
               >

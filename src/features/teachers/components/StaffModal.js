@@ -1,6 +1,6 @@
 "use client";
 
-import { LoaderCircle, X } from "lucide-react";
+import { LoaderCircle, X, GraduationCap, Shield, Calculator } from "lucide-react";
 
 export default function StaffModal({
   isOpen,
@@ -19,12 +19,12 @@ export default function StaffModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <section className="students-modal" style={{ maxWidth: 520 }}>
+      <section className="students-modal" style={{ maxWidth: 540 }}>
         <div className="students-modal-header">
           <div>
             <div className="eyebrow">NEW TEAM MEMBER</div>
             <h2>Add staff member</h2>
-            <p>Grant access to your centre workspace.</p>
+            <p>Grant faculty or administrative access to your centre workspace.</p>
           </div>
 
           <button
@@ -37,26 +37,26 @@ export default function StaffModal({
         </div>
 
         <form onSubmit={onSubmit}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <label className="students-form-field">
-              <span>Full name *</span>
+              <span>Full Name *</span>
               <input
                 name="name"
                 value={form.name}
                 onChange={onChange}
-                placeholder="e.g. Rahul Sharma"
+                placeholder="e.g. Dr. Rajesh Sharma"
                 required
               />
             </label>
 
             <label className="students-form-field">
-              <span>Email address *</span>
+              <span>Email Address *</span>
               <input
                 type="email"
                 name="email"
                 value={form.email}
                 onChange={onChange}
-                placeholder="teacher@example.com"
+                placeholder="faculty@centre.com"
                 required
               />
             </label>
@@ -68,27 +68,76 @@ export default function StaffModal({
                 name="password"
                 value={form.password}
                 onChange={onChange}
-                placeholder="At least 6 characters"
+                placeholder="Minimum 6 characters"
                 minLength={6}
                 required
               />
+              <small style={{ fontSize: "11px", color: "#64748b" }}>
+                Staff member can change this anytime from their Account Settings.
+              </small>
             </label>
 
-            <label className="students-form-field">
-              <span>Role *</span>
-              <select
-                name="role"
-                value={form.role}
-                onChange={onChange}
-              >
-                <option value="teacher">Teacher (Attendance & Students)</option>
-                <option value="accountant">Accountant (Fees & Invoicing)</option>
-                <option value="admin">Administrator (Full Access)</option>
-              </select>
-            </label>
+            <div>
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "#374151" }}>
+                Workspace Role & Privileges *
+              </span>
+
+              <div className="role-select-grid">
+                <div
+                  className={`role-select-card ${
+                    form.role === "teacher" ? "selected" : ""
+                  }`}
+                  onClick={() =>
+                    onChange({ target: { name: "role", value: "teacher" } })
+                  }
+                >
+                  <div className="role-select-title">
+                    <GraduationCap size={15} style={{ color: "#166534" }} />
+                    Teacher
+                  </div>
+                  <div className="role-select-desc">
+                    Admissions, cohort rosters, and attendance roll-call.
+                  </div>
+                </div>
+
+                <div
+                  className={`role-select-card ${
+                    form.role === "accountant" ? "selected" : ""
+                  }`}
+                  onClick={() =>
+                    onChange({ target: { name: "role", value: "accountant" } })
+                  }
+                >
+                  <div className="role-select-title">
+                    <Calculator size={15} style={{ color: "#92400e" }} />
+                    Accountant
+                  </div>
+                  <div className="role-select-desc">
+                    Fee invoicing, payment collection, and ledger receipts.
+                  </div>
+                </div>
+
+                <div
+                  className={`role-select-card ${
+                    form.role === "admin" ? "selected" : ""
+                  }`}
+                  onClick={() =>
+                    onChange({ target: { name: "role", value: "admin" } })
+                  }
+                >
+                  <div className="role-select-title">
+                    <Shield size={15} style={{ color: "#1e40af" }} />
+                    Admin
+                  </div>
+                  <div className="role-select-desc">
+                    Full management access across all modules.
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="students-modal-actions">
+          <div className="students-modal-actions" style={{ marginTop: 24 }}>
             <button
               type="button"
               className="students-secondary-button"
@@ -106,7 +155,7 @@ export default function StaffModal({
               {saving ? (
                 <LoaderCircle className="students-spinner" size={16} />
               ) : null}
-              {saving ? "Adding member..." : "Add member"}
+              {saving ? "Adding member..." : "Add staff member"}
             </button>
           </div>
         </form>

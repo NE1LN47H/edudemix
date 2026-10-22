@@ -20,7 +20,7 @@ async function ProtectedDashboard() {
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="page-loading">Loading workspace dashboard...</div>}>
+    <Suspense fallback={null}>
       <ProtectedDashboard />
     </Suspense>
   );

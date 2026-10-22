@@ -20,7 +20,7 @@ async function ProtectedTeachers() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="page-loading">Loading staff directory...</div>}>
+    <Suspense fallback={null}>
       <ProtectedTeachers />
     </Suspense>
   );

@@ -1,17 +1,21 @@
+/* Teachers & Staff Management Design System */
 .teachers-container {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 24px;
 }
 
+/* Role Badges */
 .role-pill {
   display: inline-flex;
   align-items: center;
-  padding: 3px 8px;
-  border-radius: 5px;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 9999px;
   font-size: 11px;
-  font-weight: 550;
+  font-weight: 600;
   text-transform: capitalize;
+  letter-spacing: 0.02em;
 }
 
 .role-owner {
@@ -36,4 +40,148 @@
   background: #fffbeb;
   color: #92400e;
   border: 1px solid #fef3c7;
+}
+
+/* Staff Filter & Search Bar */
+.staff-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.staff-search-box {
+  position: relative;
+  max-width: 300px;
+  width: 100%;
+}
+
+.staff-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 9px;
+  color: #9ca3af;
+}
+
+.staff-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 6px);
+  font-size: 13px;
+  outline: none;
+  background: #ffffff;
+  color: #111827;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.staff-search-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.staff-role-filters {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.staff-filter-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.staff-filter-btn:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+.staff-filter-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+/* Staff Avatar Styles */
+.students-avatar.staff-avatar-owner,
+.students-avatar.staff-avatar-admin,
+.students-avatar.staff-avatar-teacher,
+.students-avatar.staff-avatar-accountant {
+  border: none;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.staff-avatar-owner {
+  background: linear-gradient(135deg, #f43f5e, #be185d);
+  color: #fff;
+}
+
+.staff-avatar-admin {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #fff;
+}
+
+.staff-avatar-teacher {
+  background: linear-gradient(135deg, #10b981, #047857);
+  color: #fff;
+}
+
+.staff-avatar-accountant {
+  background: linear-gradient(135deg, #f59e0b, #b45309);
+  color: #fff;
+}
+
+/* Role Selection Cards inside Modal */
+.role-select-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.role-select-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: #ffffff;
+  text-align: left;
+}
+
+.role-select-card:hover {
+  border-color: #93c5fd;
+  background: #f8fafc;
+}
+
+.role-select-card.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.role-select-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.role-select-desc {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.4;
 }

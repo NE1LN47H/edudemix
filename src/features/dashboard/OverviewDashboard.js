@@ -11,7 +11,6 @@ import ActiveBatchesList from "./components/ActiveBatchesList";
 
 export default function OverviewDashboard() {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchStats() {
@@ -23,22 +22,11 @@ export default function OverviewDashboard() {
         }
       } catch (err) {
         console.error("Failed to load dashboard overview", err);
-      } finally {
-        setLoading(false);
       }
     }
 
     fetchStats();
   }, []);
-
-  if (loading) {
-    return (
-      <div className="students-state">
-        <LoaderCircle className="students-spinner" size={28} />
-        <p>Loading your centre overview...</p>
-      </div>
-    );
-  }
 
   const metrics = data?.metrics || {
     totalStudents: 0,

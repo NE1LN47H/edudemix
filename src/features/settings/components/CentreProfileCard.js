@@ -1,6 +1,7 @@
 "use client";
 
-import { Save, LoaderCircle } from "lucide-react";
+import { useState } from "react";
+import { Building2, Save, LoaderCircle, Copy, Check, Hash, Mail, Phone } from "lucide-react";
 
 export default function CentreProfileCard({
   centreForm,
@@ -8,11 +9,27 @@ export default function CentreProfileCard({
   onSubmit,
   saving,
 }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopySlug() {
+    if (!centreForm.slug) return;
+    navigator.clipboard.writeText(centreForm.slug);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   return (
     <section className="settings-card">
       <div className="settings-card-header">
-        <h2>Coaching Centre Profile</h2>
-        <p>This information is visible across your institute workspace.</p>
+        <div className="settings-header-left">
+          <div className="settings-card-icon">
+            <Building2 size={20} />
+          </div>
+          <div>
+            <h2>Coaching Centre Profile</h2>
+            <p>Configure the identity and contact details for your institute workspace.</p>
+          </div>
+        </div>
       </div>
 
       <form onSubmit={onSubmit}>
@@ -25,20 +42,47 @@ export default function CentreProfileCard({
               onChange={(e) =>
                 onChange((p) => ({ ...p, name: e.target.value }))
               }
+              placeholder="e.g. Apex Science Academy"
               required
             />
           </label>
 
           <div className="students-form-field">
             <span>Workspace Identifier (Slug)</span>
-            <div className="settings-slug-badge">{centreForm.slug}</div>
-            <small style={{ fontSize: "11px", color: "#888" }}>
-              Used by staff to sign in to this workspace.
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+              <div className="settings-slug-badge">
+                <Hash size={14} style={{ color: "#0284c7" }} />
+                <span>{centreForm.slug || "loading..."}</span>
+              </div>
+              <button
+                type="button"
+                className="settings-copy-btn"
+                onClick={handleCopySlug}
+                title="Copy workspace slug"
+              >
+                {copied ? (
+                  <>
+                    <Check size={13} style={{ color: "#16a34a" }} />
+                    <span style={{ color: "#16a34a" }}>Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy size={13} />
+                    <span>Copy Slug</span>
+                  </>
+                )}
+              </button>
+            </div>
+            <small style={{ fontSize: "11px", color: "#64748b", marginTop: 4 }}>
+              Used by tutors and staff when signing in to this institute.
             </small>
           </div>
 
           <label className="students-form-field">
-            <span>Contact Email</span>
+            <span>
+              <Mail size={13} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+              Official Email
+            </span>
             <input
               type="email"
               value={centreForm.email}
@@ -50,7 +94,10 @@ export default function CentreProfileCard({
           </label>
 
           <label className="students-form-field">
-            <span>Contact Phone</span>
+            <span>
+              <Phone size={13} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+              Phone / Helpline
+            </span>
             <input
               type="text"
               value={centreForm.phone}
@@ -62,7 +109,7 @@ export default function CentreProfileCard({
           </label>
         </div>
 
-        <div className="students-modal-actions" style={{ marginTop: 20 }}>
+        <div className="students-modal-actions" style={{ marginTop: 24 }}>
           <button
             type="submit"
             className="students-primary-button"
@@ -73,7 +120,7 @@ export default function CentreProfileCard({
             ) : (
               <Save size={16} />
             )}
-            {saving ? "Saving..." : "Save centre details"}
+            {saving ? "Saving Changes..." : "Save Workspace Profile"}
           </button>
         </div>
       </form>

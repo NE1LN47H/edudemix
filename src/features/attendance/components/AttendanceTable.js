@@ -24,14 +24,7 @@ export default function AttendanceTable({
   onSave,
 }) {
   if (loading) {
-    return (
-      <div className="attendance-roster-panel">
-        <div className="students-state">
-          <LoaderCircle className="students-spinner" size={25} />
-          <p>Loading student roster...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   if (students.length === 0) {

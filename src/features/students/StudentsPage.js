@@ -282,12 +282,7 @@ export default function StudentsPage() {
           }}
         />
 
-        {loading ? (
-          <div className="students-state">
-            <LoaderCircle className="students-spinner" size={25} />
-            <p>Loading student records...</p>
-          </div>
-        ) : error || students.length === 0 ? (
+        {loading ? null : error || students.length === 0 ? (
           <StudentEmptyState
             search={search}
             error={error}

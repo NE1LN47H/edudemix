@@ -284,12 +284,7 @@ export default function BatchesPage() {
           }}
         />
 
-        {loading ? (
-          <div className="batches-state">
-            <LoaderCircle className="batches-spinner" size={25} />
-            <p>Loading batches...</p>
-          </div>
-        ) : error ? (
+        {loading ? null : error ? (
           <div className="batches-state">
             <div className="batches-state-icon">
               <Layers3 size={24} />
