@@ -574,3 +574,55 @@
     border-radius: 11px;
   }
 }
+
+.student-actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.student-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #e5e5e5;
+  background: #ffffff;
+  color: #555;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.student-action-btn:hover {
+  background: #f5f5f5;
+  color: #171717;
+  border-color: #d4d4d4;
+}
+
+.student-action-btn.delete:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.student-batch-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #404040;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.student-batch-unassigned {
+  color: #a3a3a3;
+  font-style: italic;
+}

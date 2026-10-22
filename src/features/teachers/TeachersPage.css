@@ -1,0 +1,39 @@
+.teachers-container {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 550;
+  text-transform: capitalize;
+}
+
+.role-owner {
+  background: #fdf2f8;
+  color: #9d174d;
+  border: 1px solid #fbcfe8;
+}
+
+.role-admin {
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #dbeafe;
+}
+
+.role-teacher {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #dcfce7;
+}
+
+.role-accountant {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fef3c7;
+}

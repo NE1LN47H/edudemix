@@ -71,6 +71,22 @@ const managementNavigation = [
 export default function DashboardShell({ children }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const res = await fetch("/api/auth/session", { cache: "no-store" });
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          setUserInfo(data.user);
+        }
+      } catch (err) {
+        // Fallback gracefully
+      }
+    }
+    loadUser();
+  }, []);
 
   function isActive(href) {
     if (href === "/") {
@@ -104,6 +120,16 @@ export default function DashboardShell({ children }) {
       (item) => isActive(item.href)
     )?.label || "Overview";
 
+  const centreName = userInfo?.centreName || "My Academy";
+  const userName = userInfo?.name || "Centre account";
+  const userRole = userInfo?.role ? userInfo.role.charAt(0).toUpperCase() + userInfo.role.slice(1) : "Staff";
+  const initials = userName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "ED";
+
   return (
     <div className="app-shell">
       {sidebarOpen && (
@@ -130,10 +156,10 @@ export default function DashboardShell({ children }) {
           type="button"
           className="workspace-switcher"
         >
-          <span className="workspace-avatar">E</span>
+          <span className="workspace-avatar">{centreName.charAt(0).toUpperCase()}</span>
 
           <span className="workspace-copy">
-            <strong>My Academy</strong>
+            <strong>{centreName}</strong>
             <small>Centre workspace</small>
           </span>
 
@@ -164,16 +190,16 @@ export default function DashboardShell({ children }) {
             <span>Help & support</span>
           </a>
 
-          <div className="profile-card">
-            <div className="profile-avatar">ED</div>
+          <Link href="/settings" className="profile-card">
+            <div className="profile-avatar">{initials}</div>
 
             <div className="profile-copy">
-              <strong>Centre account</strong>
-              <small>Workspace member</small>
+              <strong>{userName}</strong>
+              <small>{userRole}</small>
             </div>
 
             <Settings2 size={16} className="muted-icon" />
-          </div>
+          </Link>
         </div>
       </aside>
 
@@ -207,7 +233,7 @@ export default function DashboardShell({ children }) {
               <Bell size={17} strokeWidth={1.8} />
             </button>
 
-            <div className="topbar-avatar">ED</div>
+            <div className="topbar-avatar">{initials}</div>
           </div>
         </header>
 

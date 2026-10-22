@@ -85,6 +85,16 @@ export async function sessionController() {
 
   return Response.json({
     authenticated: Boolean(centre),
+    user: centre
+      ? {
+          id: centre.userId,
+          name: centre.userName,
+          email: centre.userEmail,
+          role: centre.role,
+          centreName: centre.centreName,
+          centreSlug: centre.centreSlug,
+        }
+      : null,
   });
 }
 

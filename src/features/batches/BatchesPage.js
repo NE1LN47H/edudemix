@@ -14,6 +14,7 @@ import {
   CalendarDays,
   Clock3,
   Pencil,
+  Trash2,
 } from "lucide-react";
 import "./BatchesPage.css";
 
@@ -260,6 +261,32 @@ async function handleSubmit(event) {
   }
 }
 
+async function handleDeleteBatch(batch) {
+  if (!window.confirm(`Are you sure you want to delete batch "${batch.name}"? Enrolled students will be unassigned.`)) {
+    return;
+  }
+
+  setError("");
+  setSuccess("");
+
+  try {
+    const response = await fetch(`/api/batches/${batch._id}`, {
+      method: "DELETE",
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Unable to delete batch.");
+    }
+
+    setSuccess(`Batch "${batch.name}" removed successfully.`);
+    await loadBatches();
+  } catch (err) {
+    setError(err.message || "Unable to delete batch.");
+  }
+}
+
   const firstRecord =
     pagination.total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
 
@@ -447,16 +474,26 @@ async function handleSubmit(event) {
                     </div>
                   )}
                   <div className="batch-card-actions">
-                  <button
-                    type="button"
-                    className="batch-edit-button"
-                    onClick={() => openEditForm(batch)}
-                    aria-label={`Edit ${batch.name}`}
-                  >
-                    <Pencil size={14} />
-                    Edit
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      className="batch-edit-button"
+                      onClick={() => openEditForm(batch)}
+                      aria-label={`Edit ${batch.name}`}
+                    >
+                      <Pencil size={14} />
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      className="batch-delete-button"
+                      onClick={() => handleDeleteBatch(batch)}
+                      aria-label={`Delete ${batch.name}`}
+                    >
+                      <Trash2 size={14} />
+                      Delete
+                    </button>
+                  </div>
                 </article>
               ))}
             </div>

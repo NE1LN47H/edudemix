@@ -1,30 +1,20 @@
 
 import { Suspense } from "react";
 import DashboardShell from "@/components/DashboardShell";
+import OverviewDashboard from "@/features/dashboard/OverviewDashboard";
 import { requireAuthenticatedCentre } from "@/controllers/pageController";
+
+export const metadata = {
+  title: "Overview | edudemix",
+  description: "Coaching centre management workspace overview",
+};
 
 async function ProtectedDashboard() {
   await requireAuthenticatedCentre();
 
   return (
     <DashboardShell>
-      <section className="page-heading">
-        <div>
-          <div className="eyebrow">WORKSPACE</div>
-          <h1>Overview</h1>
-          <p className="page-description">
-            Your coaching centre at a glance.
-          </p>
-        </div>
-      </section>
-
-      <section className="panel students-empty-panel">
-        <h2>Welcome to edudemix</h2>
-        <p>
-          Your workspace is ready. Start by managing
-          your students and batches.
-        </p>
-      </section>
+      <OverviewDashboard />
     </DashboardShell>
   );
 }

@@ -1,6 +1,10 @@
 
 import { ZodError } from "zod";
-import { markAttendance } from "@/services/attendanceService";
+import {
+  markAttendance,
+  getBatchAttendance,
+  getAttendanceOverview,
+} from "@/services/attendanceService";
 import { withAuthenticatedCentre } from "@/controllers/controllerUtils";
 
 export function markAttendanceController(request) {
@@ -78,6 +82,52 @@ export function markAttendanceController(request) {
           success: false,
           message: "Unable to save attendance",
         },
+        { status: 500 }
+      );
+    }
+  });
+}
+
+export function getAttendanceController(request) {
+  return withAuthenticatedCentre(async ({ id: centreId }) => {
+    try {
+      const url = new URL(request.url);
+      const batchId = url.searchParams.get("batchId");
+      const date = url.searchParams.get("date");
+      const overview = url.searchParams.get("overview");
+
+      if (overview === "true" || !batchId) {
+        const stats = await getAttendanceOverview(centreId, date);
+        return Response.json({
+          success: true,
+          data: stats,
+        });
+      }
+
+      const attendanceData = await getBatchAttendance(centreId, batchId, date);
+
+      return Response.json({
+        success: true,
+        data: attendanceData,
+      });
+    } catch (error) {
+      if (error.message === "INVALID_CENTRE_ID" || error.message === "INVALID_BATCH_ID") {
+        return Response.json(
+          { success: false, message: "Invalid batch or centre identifier" },
+          { status: 400 }
+        );
+      }
+
+      if (error.message === "BATCH_NOT_FOUND") {
+        return Response.json(
+          { success: false, message: "Batch not found" },
+          { status: 404 }
+        );
+      }
+
+      console.error("Get attendance error:", error);
+      return Response.json(
+        { success: false, message: "Unable to retrieve attendance" },
         { status: 500 }
       );
     }

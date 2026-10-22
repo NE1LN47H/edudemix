@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -11,6 +10,8 @@ import {
   X,
   LoaderCircle,
   GraduationCap,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import "./StudentsPage.css";
 
@@ -45,8 +46,12 @@ function formatDate(value) {
 
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
+  const [batches, setBatches] = useState([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [editingStudent, setEditingStudent] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+
   const [pagination, setPagination] = useState({
     page: 1,
     limit: PAGE_SIZE,
@@ -61,6 +66,22 @@ export default function StudentsPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Fetch batches for batch assignment dropdown
+  useEffect(() => {
+    async function loadBatches() {
+      try {
+        const response = await fetch("/api/batches?limit=100", { cache: "no-store" });
+        const result = await response.json();
+        if (result.success && result.batches) {
+          setBatches(result.batches);
+        }
+      } catch (err) {
+        console.error("Failed to load batches", err);
+      }
+    }
+    loadBatches();
+  }, []);
 
   const loadStudents = useCallback(async () => {
     setLoading(true);
@@ -118,10 +139,32 @@ export default function StudentsPage() {
     }));
   }
 
-  function openForm() {
+  function openCreateForm() {
+    setEditingStudent(null);
     setForm({
       ...EMPTY_FORM,
       admissionDate: new Date().toISOString().slice(0, 10),
+    });
+    setFormError("");
+    setSuccess("");
+    setShowForm(true);
+  }
+
+  function openEditForm(student) {
+    setEditingStudent(student);
+    setForm({
+      admissionNumber: student.admissionNumber || "",
+      name: student.name || "",
+      phone: student.phone || "",
+      guardianName: student.guardianName || "",
+      guardianPhone: student.guardianPhone || "",
+      email: student.email || "",
+      batchId: student.batchId?._id || student.batchId || "",
+      admissionDate: student.admissionDate
+        ? new Date(student.admissionDate).toISOString().slice(0, 10)
+        : "",
+      status: student.status || "active",
+      address: student.address || "",
     });
     setFormError("");
     setSuccess("");
@@ -132,6 +175,7 @@ export default function StudentsPage() {
     if (saving) return;
 
     setShowForm(false);
+    setEditingStudent(null);
     setFormError("");
   }
 
@@ -142,8 +186,14 @@ export default function StudentsPage() {
     setSuccess("");
 
     try {
-      const response = await fetch("/api/students", {
-        method: "POST",
+      const isEditing = Boolean(editingStudent);
+      const url = isEditing
+        ? `/api/students/${editingStudent._id}`
+        : "/api/students";
+      const method = isEditing ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -159,23 +209,52 @@ export default function StudentsPage() {
           .join(" ");
 
         throw new Error(
-          validationMessage || result.message || "Unable to add student."
+          validationMessage || result.message || "Unable to save student."
         );
       }
 
-      setSuccess("Student added successfully.");
+      setSuccess(
+        isEditing
+          ? "Student details updated successfully."
+          : "Student added successfully."
+      );
       setShowForm(false);
+      setEditingStudent(null);
       setForm({ ...EMPTY_FORM });
-      setPage(1);
 
-      // Reload the real records from MongoDB.
-      if (page === 1) {
-        await loadStudents();
-      }
+      await loadStudents();
     } catch (err) {
-      setFormError(err.message || "Unable to add student.");
+      setFormError(err.message || "Unable to save student.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDeleteStudent(student) {
+    if (!window.confirm(`Are you sure you want to remove ${student.name}?`)) {
+      return;
+    }
+
+    setDeletingId(student._id);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch(`/api/students/${student._id}`, {
+        method: "DELETE",
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to delete student.");
+      }
+
+      setSuccess(`Student ${student.name} removed successfully.`);
+      await loadStudents();
+    } catch (err) {
+      setError(err.message || "Unable to delete student.");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -197,14 +276,14 @@ export default function StudentsPage() {
           <div className="eyebrow">WORKSPACE</div>
           <h1>Students</h1>
           <p className="page-description">
-            Manage student records for your coaching centre.
+            Manage student records and batch assignments for your coaching centre.
           </p>
         </div>
 
         <button
           type="button"
           className="students-primary-button"
-          onClick={openForm}
+          onClick={openCreateForm}
         >
           <Plus size={17} />
           Add student
@@ -218,6 +297,19 @@ export default function StudentsPage() {
             type="button"
             aria-label="Dismiss message"
             onClick={() => setSuccess("")}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <div className="students-notice students-notice-error" role="alert">
+          {error}
+          <button
+            type="button"
+            aria-label="Dismiss message"
+            onClick={() => setError("")}
           >
             <X size={16} />
           </button>
@@ -293,7 +385,7 @@ export default function StudentsPage() {
               <button
                 type="button"
                 className="students-secondary-button"
-                onClick={openForm}
+                onClick={openCreateForm}
               >
                 <Plus size={16} />
                 Add your first student
@@ -308,9 +400,11 @@ export default function StudentsPage() {
                   <tr>
                     <th>Student</th>
                     <th>Admission no.</th>
+                    <th>Batch</th>
                     <th>Phone</th>
                     <th>Admission date</th>
                     <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
 
@@ -339,6 +433,17 @@ export default function StudentsPage() {
                           {student.admissionNumber}
                         </span>
                       </td>
+                      <td>
+                        {student.batchId ? (
+                          <span className="student-batch-tag">
+                            {student.batchId.name || "Assigned"}
+                          </span>
+                        ) : (
+                          <span className="student-batch-unassigned">
+                            Unassigned
+                          </span>
+                        )}
+                      </td>
                       <td>{student.phone}</td>
                       <td>{formatDate(student.admissionDate)}</td>
                       <td>
@@ -348,6 +453,30 @@ export default function StudentsPage() {
                           <span />
                           {student.status || "active"}
                         </span>
+                      </td>
+                      <td>
+                        <div className="student-actions-cell">
+                          <button
+                            type="button"
+                            className="student-action-btn"
+                            title="Edit student"
+                            aria-label={`Edit ${student.name}`}
+                            onClick={() => openEditForm(student)}
+                          >
+                            <Pencil size={13} />
+                          </button>
+
+                          <button
+                            type="button"
+                            className="student-action-btn delete"
+                            title="Delete student"
+                            aria-label={`Delete ${student.name}`}
+                            onClick={() => handleDeleteStudent(student)}
+                            disabled={deletingId === student._id}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -404,8 +533,10 @@ export default function StudentsPage() {
             <div className="students-modal-header">
               <div>
                 <div className="eyebrow">STUDENT RECORDS</div>
-                <h2 id="students-modal-title">Add student</h2>
-                <p>Enter the student's admission details.</p>
+                <h2 id="students-modal-title">
+                  {editingStudent ? "Edit student" : "Add student"}
+                </h2>
+                <p>Enter the student&apos;s admission details.</p>
               </div>
 
               <button
@@ -444,6 +575,22 @@ export default function StudentsPage() {
                     maxLength={30}
                     required
                   />
+                </label>
+
+                <label className="students-form-field">
+                  <span>Assigned batch</span>
+                  <select
+                    name="batchId"
+                    value={form.batchId}
+                    onChange={updateField}
+                  >
+                    <option value="">No batch (Unassigned)</option>
+                    {batches.map((batch) => (
+                      <option key={batch._id} value={batch._id}>
+                        {batch.name} ({batch.courseName})
+                      </option>
+                    ))}
+                  </select>
                 </label>
 
                 <label className="students-form-field">
@@ -557,7 +704,11 @@ export default function StudentsPage() {
                   {saving && (
                     <LoaderCircle className="students-spinner" size={16} />
                   )}
-                  {saving ? "Saving..." : "Save student"}
+                  {saving
+                    ? "Saving..."
+                    : editingStudent
+                    ? "Save changes"
+                    : "Save student"}
                 </button>
               </div>
             </form>

@@ -148,3 +148,32 @@ export async function updateBatch(centreId, batchId, input) {
   return batch;
 }
 
+export async function deleteBatch(centreId, batchId) {
+  if (!mongoose.isValidObjectId(centreId)) {
+    throw new Error("INVALID_CENTRE_ID");
+  }
+
+  if (!mongoose.isValidObjectId(batchId)) {
+    throw new Error("INVALID_BATCH_ID");
+  }
+
+  await connectToDatabase();
+
+  const batch = await Batch.findOneAndDelete({
+    _id: batchId,
+    centreId,
+  });
+
+  if (!batch) {
+    throw new Error("BATCH_NOT_FOUND");
+  }
+
+  // Unassign students from this batch
+  await Student.updateMany(
+    { centreId, batchId },
+    { $set: { batchId: null } }
+  );
+
+  return { success: true, id: batchId };
+}
+

@@ -4,6 +4,7 @@ import {
   createBatch,
   getBatches,
   updateBatch,
+  deleteBatch,
 } from "@/services/batchService";
 import { withAuthenticatedCentre } from "@/controllers/controllerUtils";
 
@@ -82,7 +83,6 @@ export function addBatch(req) {
   });
 }
 
-
 export function editBatch(req, routeContext) {
   return withAuthenticatedCentre(async ({ id: centreId }) => {
     try {
@@ -134,6 +134,33 @@ export function editBatch(req, routeContext) {
 
       return Response.json(
         { success: false, message: "Unable to update batch" },
+        { status: 500 }
+      );
+    }
+  });
+}
+
+export function removeBatch(req, routeContext) {
+  return withAuthenticatedCentre(async ({ id: centreId }) => {
+    try {
+      const { id: batchId } = await routeContext.params;
+      const result = await deleteBatch(centreId, batchId);
+
+      return Response.json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      if (error?.message === "BATCH_NOT_FOUND") {
+        return Response.json(
+          { success: false, message: "Batch not found" },
+          { status: 404 }
+        );
+      }
+
+      console.error("Delete batch error:", error);
+      return Response.json(
+        { success: false, message: "Unable to delete batch" },
         { status: 500 }
       );
     }

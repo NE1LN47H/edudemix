@@ -84,6 +84,7 @@ export async function getStudents(
 
   const [students, total] = await Promise.all([
     Student.find(filter)
+      .populate("batchId", "name courseName")
       .sort({ createdAt: -1 })
       .skip((safePage - 1) * safeLimit)
       .limit(safeLimit)
@@ -101,4 +102,85 @@ export async function getStudents(
       totalPages: Math.ceil(total / safeLimit),
     },
   };
+}
+
+export async function updateStudent(centreId, studentId, input) {
+  if (!mongoose.isValidObjectId(centreId)) {
+    throw new Error("INVALID_CENTRE_ID");
+  }
+
+  if (!mongoose.isValidObjectId(studentId)) {
+    throw new Error("INVALID_STUDENT_ID");
+  }
+
+  const validatedData = createStudentSchema.parse(input);
+
+  await connectToDatabase();
+
+  let batchId = null;
+  if (validatedData.batchId) {
+    if (!mongoose.isValidObjectId(validatedData.batchId)) {
+      throw new Error("INVALID_BATCH_ID");
+    }
+
+    const batch = await Batch.findOne({
+      _id: validatedData.batchId,
+      centreId,
+    }).select("_id");
+
+    if (!batch) {
+      throw new Error("BATCH_NOT_FOUND");
+    }
+
+    batchId = batch._id;
+  }
+
+  const student = await Student.findOneAndUpdate(
+    {
+      _id: studentId,
+      centreId,
+    },
+    {
+      $set: {
+        ...validatedData,
+        batchId,
+        admissionDate: validatedData.admissionDate
+          ? new Date(validatedData.admissionDate)
+          : undefined,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).populate("batchId", "name courseName");
+
+  if (!student) {
+    throw new Error("STUDENT_NOT_FOUND");
+  }
+
+  return student;
+}
+
+export async function deleteStudent(centreId, studentId) {
+  if (!mongoose.isValidObjectId(centreId)) {
+    throw new Error("INVALID_CENTRE_ID");
+  }
+
+  if (!mongoose.isValidObjectId(studentId)) {
+    throw new Error("INVALID_STUDENT_ID");
+  }
+
+  await connectToDatabase();
+
+  const student = await Student.findOneAndDelete({
+    _id: studentId,
+    centreId,
+  });
+
+  if (!student) {
+    throw new Error("STUDENT_NOT_FOUND");
+  }
+
+  return { success: true, id: studentId };
 }

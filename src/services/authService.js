@@ -110,7 +110,7 @@ export async function getAuthenticatedCentre() {
     _id: session.userId,
     centreId: session.centreId,
     status: "active",
-  }).select("_id centreId role");
+  }).select("_id name email centreId role");
 
   if (!user) {
     return null;
@@ -119,7 +119,7 @@ export async function getAuthenticatedCentre() {
   const centre = await Centre.findOne({
     _id: user.centreId,
     status: "active",
-  }).select("_id");
+  }).select("_id name slug");
 
   if (!centre) {
     return null;
@@ -127,7 +127,11 @@ export async function getAuthenticatedCentre() {
 
   return {
     id: centre._id.toString(),
+    centreName: centre.name,
+    centreSlug: centre.slug,
     userId: user._id.toString(),
+    userName: user.name,
+    userEmail: user.email,
     role: user.role,
   };
 }
