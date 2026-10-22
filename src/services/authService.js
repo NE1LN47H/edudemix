@@ -1,27 +1,13 @@
-
 import bcrypt from "bcryptjs";
-import { z } from "zod";
+import mongoose from "mongoose";
 import connectToDatabase from "@/lib/mongodb";
+import { getSession } from "@/lib/session";
 import Centre from "@/models/Centre";
 import User from "@/models/User";
-
-const loginSchema = z.object({
-  centreSlug: z
-    .string()
-    .trim()
-    .min(1)
-    .max(100)
-    .regex(/^[a-z0-9-]+$/),
-
-  email: z
-    .string()
-    .trim()
-    .email()
-    .max(254)
-    .transform((value) => value.toLowerCase()),
-
-  password: z.string().min(1).max(128),
-});
+import {
+  loginSchema,
+  registerCentreSchema,
+} from "@/validators/authValidator";
 
 export async function authenticateUser(input) {
   const credentials = loginSchema.parse(input);
@@ -61,6 +47,87 @@ export async function authenticateUser(input) {
     centreId: user.centreId.toString(),
     name: user.name,
     email: user.email,
+    role: user.role,
+  };
+}
+
+export async function registerCentre(input) {
+  const data = registerCentreSchema.parse(input);
+
+  await connectToDatabase();
+
+  const passwordHash = await bcrypt.hash(data.password, 12);
+  const centre = await Centre.create({
+    name: data.centreName,
+    slug: data.centreSlug,
+    email: data.email,
+    phone: data.phone,
+  });
+
+  try {
+    const user = await User.create({
+      centreId: centre._id,
+      name: data.ownerName,
+      email: data.email,
+      passwordHash,
+      role: "owner",
+      status: "active",
+    });
+
+    return {
+      centre: {
+        id: centre._id.toString(),
+        name: centre.name,
+        slug: centre.slug,
+      },
+      user: {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    };
+  } catch (error) {
+    await Centre.deleteOne({ _id: centre._id });
+    throw error;
+  }
+}
+
+export async function getAuthenticatedCentre() {
+  const session = await getSession();
+
+  if (
+    !session ||
+    !mongoose.isValidObjectId(session.userId) ||
+    !mongoose.isValidObjectId(session.centreId)
+  ) {
+    return null;
+  }
+
+  await connectToDatabase();
+
+  const user = await User.findOne({
+    _id: session.userId,
+    centreId: session.centreId,
+    status: "active",
+  }).select("_id centreId role");
+
+  if (!user) {
+    return null;
+  }
+
+  const centre = await Centre.findOne({
+    _id: user.centreId,
+    status: "active",
+  }).select("_id");
+
+  if (!centre) {
+    return null;
+  }
+
+  return {
+    id: centre._id.toString(),
+    userId: user._id.toString(),
     role: user.role,
   };
 }

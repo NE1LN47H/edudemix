@@ -1,16 +1,11 @@
 
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
-import { getAuthenticatedCentre } from "@/lib/auth";
+import { requireAuthenticatedCentre } from "@/controllers/pageController";
 import DashboardShell from "@/components/DashboardShell";
 import BatchesPage from "@/features/batches/BatchesPage";
 
 async function ProtectedBatches() {
-  const centre = await getAuthenticatedCentre();
-
-  if (!centre) {
-    redirect("/login");
-  }
+  await requireAuthenticatedCentre();
 
   return (
     <DashboardShell>

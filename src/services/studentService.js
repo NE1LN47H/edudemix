@@ -1,22 +1,43 @@
 
 import mongoose from "mongoose";
 import Student from "@/models/Student";
+import Batch from "@/models/Batch";
 import connectToDatabase from "@/lib/mongodb";
 import { createStudentSchema } from "@/validators/studentValidator";
 
 export async function createStudent(centreId, input) {
-  const validatedData = createStudentSchema.parse(input);
-
   if (!mongoose.isValidObjectId(centreId)) {
     throw new Error("INVALID_CENTRE_ID");
   }
 
+  const validatedData = createStudentSchema.parse(input);
+
   await connectToDatabase();
+
+  // Verify that the selected batch belongs to this centre.
+  let batchId = null;
+
+  if (validatedData.batchId) {
+    if (!mongoose.isValidObjectId(validatedData.batchId)) {
+      throw new Error("INVALID_BATCH_ID");
+    }
+
+    const batch = await Batch.findOne({
+      _id: validatedData.batchId,
+      centreId,
+    }).select("_id");
+
+    if (!batch) {
+      throw new Error("BATCH_NOT_FOUND");
+    }
+
+    batchId = batch._id;
+  }
 
   const student = await Student.create({
     ...validatedData,
     centreId,
-    batchId: validatedData.batchId || null,
+    batchId,
     admissionDate: validatedData.admissionDate
       ? new Date(validatedData.admissionDate)
       : new Date(),
@@ -40,12 +61,23 @@ export async function getStudents(
 
   const filter = { centreId };
 
-  if (search.trim()) {
-    const escapedSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Escape special regex characters in the search input.
+  const trimmedSearch = String(search).trim();
+
+  if (trimmedSearch) {
+    const escapedSearch = trimmedSearch.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
 
     filter.$or = [
       { name: { $regex: escapedSearch, $options: "i" } },
-      { admissionNumber: { $regex: escapedSearch, $options: "i" } },
+      {
+        admissionNumber: {
+          $regex: escapedSearch,
+          $options: "i",
+        },
+      },
       { phone: { $regex: escapedSearch, $options: "i" } },
     ];
   }

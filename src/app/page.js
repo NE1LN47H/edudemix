@@ -1,15 +1,10 @@
 
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import DashboardShell from "@/components/DashboardShell";
-import { getAuthenticatedCentre } from "@/lib/auth";
+import { requireAuthenticatedCentre } from "@/controllers/pageController";
 
 async function ProtectedDashboard() {
-  const centre = await getAuthenticatedCentre();
-
-  if (!centre) {
-    redirect("/login");
-  }
+  await requireAuthenticatedCentre();
 
   return (
     <DashboardShell>

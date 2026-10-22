@@ -1,6 +1,10 @@
 
 import { ZodError } from "zod";
-import { authenticateUser } from "@/services/authService";
+import {
+  authenticateUser,
+  getAuthenticatedCentre,
+  registerCentre,
+} from "@/services/authService";
 import {
   createSession,
   destroySession,
@@ -70,6 +74,64 @@ export async function logoutController() {
       {
         success: false,
         message: "Unable to log out right now",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function sessionController() {
+  const centre = await getAuthenticatedCentre();
+
+  return Response.json({
+    authenticated: Boolean(centre),
+  });
+}
+
+export async function registerCentreController(request) {
+  try {
+    const body = await request.json();
+    const result = await registerCentre(body);
+
+    return Response.json(
+      {
+        success: true,
+        message: "Centre registered successfully",
+        ...result,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        {
+          success: false,
+          message: "Invalid registration details",
+          errors: error.issues.map((issue) => ({
+            field: issue.path.join("."),
+            message: issue.message,
+          })),
+        },
+        { status: 400 }
+      );
+    }
+
+    if (error?.code === 11000) {
+      return Response.json(
+        {
+          success: false,
+          message: "That centre slug or owner email already exists",
+        },
+        { status: 409 }
+      );
+    }
+
+    console.error("Centre registration error:", error);
+
+    return Response.json(
+      {
+        success: false,
+        message: "Unable to register centre",
       },
       { status: 500 }
     );

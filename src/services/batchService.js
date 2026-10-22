@@ -104,3 +104,47 @@ export async function getBatches(
     },
   };
 }
+
+
+export async function updateBatch(centreId, batchId, input) {
+  if (!mongoose.isValidObjectId(centreId)) {
+    throw new Error("INVALID_CENTRE_ID");
+  }
+
+  if (!mongoose.isValidObjectId(batchId)) {
+    throw new Error("INVALID_BATCH_ID");
+  }
+
+  const validatedData = createBatchSchema.parse(input);
+
+  await connectToDatabase();
+
+  const batch = await Batch.findOneAndUpdate(
+    {
+      _id: batchId,
+      centreId,
+    },
+    {
+      $set: {
+        ...validatedData,
+        startDate: new Date(
+          `${validatedData.startDate}T00:00:00.000Z`
+        ),
+        endDate: new Date(
+          `${validatedData.endDate}T00:00:00.000Z`
+        ),
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!batch) {
+    throw new Error("BATCH_NOT_FOUND");
+  }
+
+  return batch;
+}
+

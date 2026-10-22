@@ -13,6 +13,7 @@ import {
   Users,
   CalendarDays,
   Clock3,
+  Pencil,
 } from "lucide-react";
 import "./BatchesPage.css";
 
@@ -75,6 +76,7 @@ export default function BatchesPage() {
   const [batches, setBatches] = useState([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [editingBatch, setEditingBatch] = useState(null);
 
   const [pagination, setPagination] = useState({
     page: 1,
@@ -163,25 +165,58 @@ export default function BatchesPage() {
     });
     setFormError("");
     setSuccess("");
+    setEditingBatch(null);
     setShowForm(true);
   }
 
   function closeForm() {
     if (saving) return;
-
+    setEditingBatch(null);
     setShowForm(false);
     setFormError("");
   }
 
-  async function handleSubmit(event) {
-    event.preventDefault();
-    setSaving(true);
-    setFormError("");
-    setSuccess("");
+  function openEditForm(batch) {
+  setEditingBatch(batch);
 
-    try {
-      const response = await fetch("/api/batches", {
-        method: "POST",
+  setForm({
+    name: batch.name || "",
+    courseName: batch.courseName || "",
+    description: batch.description || "",
+    startDate: batch.startDate
+      ? new Date(batch.startDate).toISOString().slice(0, 10)
+      : "",
+    endDate: batch.endDate
+      ? new Date(batch.endDate).toISOString().slice(0, 10)
+      : "",
+    scheduleDays: batch.scheduleDays || [],
+    startTime: batch.startTime || "",
+    endTime: batch.endTime || "",
+    capacity: String(batch.capacity ?? 30),
+    status: batch.status || "active",
+  });
+
+  setFormError("");
+  setSuccess("");
+  setShowForm(true);
+}
+
+  
+async function handleSubmit(event) {
+  event.preventDefault();
+  setSaving(true);
+  setFormError("");
+  setSuccess("");
+
+  try {
+    const isEditing = Boolean(editingBatch);
+
+    const response = await fetch(
+      isEditing
+        ? `/api/batches/${editingBatch._id}`
+        : "/api/batches",
+      {
+        method: isEditing ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -189,36 +224,41 @@ export default function BatchesPage() {
           ...form,
           capacity: Number(form.capacity),
         }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        const validationMessage = result.errors
-          ?.map((issue) => issue.message)
-          .filter(Boolean)
-          .join(" ");
-
-        throw new Error(
-          validationMessage || result.message || "Unable to create batch."
-        );
       }
+    );
 
-      setShowForm(false);
-      setForm({ ...EMPTY_FORM });
-      setSuccess("Batch created successfully.");
-      setPage(1);
+    const result = await response.json();
 
-      // Refresh immediately if already on page one.
-      if (page === 1) {
-        await loadBatches();
-      }
-    } catch (err) {
-      setFormError(err.message || "Unable to create batch.");
-    } finally {
-      setSaving(false);
+    if (!response.ok || !result.success) {
+      const validationMessage = result.errors
+        ?.map((issue) => issue.message)
+        .filter(Boolean)
+        .join(" ");
+
+      throw new Error(
+        validationMessage || result.message || "Unable to save batch."
+      );
     }
+
+    setShowForm(false);
+    setEditingBatch(null);
+    setForm({ ...EMPTY_FORM });
+    setSearch("");
+    setPage(1);
+
+    setSuccess(
+      isEditing
+        ? "Batch updated successfully."
+        : "Batch created successfully."
+    );
+
+    await loadBatches();
+  } catch (err) {
+    setFormError(err.message || "Unable to save batch.");
+  } finally {
+    setSaving(false);
   }
+}
 
   const firstRecord =
     pagination.total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
@@ -406,6 +446,17 @@ export default function BatchesPage() {
                       ))}
                     </div>
                   )}
+                  <div className="batch-card-actions">
+                  <button
+                    type="button"
+                    className="batch-edit-button"
+                    onClick={() => openEditForm(batch)}
+                    aria-label={`Edit ${batch.name}`}
+                  >
+                    <Pencil size={14} />
+                    Edit
+                  </button>
+                </div>
                 </article>
               ))}
             </div>
@@ -459,7 +510,9 @@ export default function BatchesPage() {
             <div className="batches-modal-header">
               <div>
                 <div className="eyebrow">BATCH MANAGEMENT</div>
-                <h2 id="batches-modal-title">Create batch</h2>
+                <h2 id="batches-modal-title">
+  {editingBatch ? "Edit batch" : "Create batch"}
+</h2>
                 <p>Set up a course and its class schedule.</p>
               </div>
 
@@ -631,7 +684,13 @@ export default function BatchesPage() {
                   {saving && (
                     <LoaderCircle className="batches-spinner" size={16} />
                   )}
-                  {saving ? "Creating..." : "Create batch"}
+                  {saving
+                  ? editingBatch
+                    ? "Saving..."
+                    : "Creating..."
+                  : editingBatch
+                    ? "Save changes"
+                    : "Create batch"}
                 </button>
               </div>
             </form>

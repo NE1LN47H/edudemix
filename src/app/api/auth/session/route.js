@@ -1,10 +1,6 @@
 
-import { getAuthenticatedCentre } from "@/lib/auth";
+import { sessionController } from "@/controllers/authController";
 
 export async function GET() {
-  const centre = await getAuthenticatedCentre();
-
-  return Response.json({
-    authenticated: Boolean(centre),
-  });
+  return sessionController();
 }
