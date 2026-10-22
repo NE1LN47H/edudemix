@@ -37,14 +37,14 @@ export async function createSession(user) {
 }
 
 export async function getSession() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
-
-  if (!token) {
-    return null;
-  }
-
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(COOKIE_NAME)?.value;
+
+    if (!token) {
+      return null;
+    }
+
     const { payload } = await jwtVerify(token, getSecret(), {
       algorithms: ["HS256"],
     });
