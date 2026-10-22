@@ -1,15 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  GraduationCap,
-  Plus,
-  X,
-  LoaderCircle,
-  Trash2,
-  Power,
-  ShieldCheck,
-} from "lucide-react";
+import { GraduationCap, Plus, LoaderCircle } from "lucide-react";
+import StaffTable from "./components/StaffTable";
+import StaffModal from "./components/StaffModal";
+import NoticeBanner from "@/components/ui/NoticeBanner";
 import "./TeachersPage.css";
 
 const EMPTY_STAFF_FORM = {
@@ -147,23 +142,16 @@ export default function TeachersPage() {
         </button>
       </section>
 
-      {success && (
-        <div className="students-notice students-notice-success" role="status">
-          {success}
-          <button type="button" onClick={() => setSuccess("")}>
-            <X size={16} />
-          </button>
-        </div>
-      )}
-
-      {error && (
-        <div className="students-notice students-notice-error" role="alert">
-          {error}
-          <button type="button" onClick={() => setError("")}>
-            <X size={16} />
-          </button>
-        </div>
-      )}
+      <NoticeBanner
+        type="success"
+        message={success}
+        onDismiss={() => setSuccess("")}
+      />
+      <NoticeBanner
+        type="error"
+        message={error}
+        onDismiss={() => setError("")}
+      />
 
       <section className="students-panel">
         <div className="students-toolbar">
@@ -186,211 +174,29 @@ export default function TeachersPage() {
               <GraduationCap size={24} />
             </div>
             <h3>No additional staff added</h3>
-            <p>Add teachers or administrators to collaborate in your centre workspace.</p>
+            <p>
+              Add teachers or administrators to collaborate in your centre workspace.
+            </p>
           </div>
         ) : (
-          <div className="students-table-wrap">
-            <table className="students-table">
-              <thead>
-                <tr>
-                  <th>Member</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Joined</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {staff.map((user) => (
-                  <tr key={user._id}>
-                    <td>
-                      <div className="students-person">
-                        <div className="students-avatar">
-                          {(user.name || "?").charAt(0).toUpperCase()}
-                        </div>
-                        <span className="students-person-name">
-                          {user.name}
-                        </span>
-                      </div>
-                    </td>
-
-                    <td>{user.email}</td>
-
-                    <td>
-                      <span className={`role-pill role-${user.role}`}>
-                        {user.role}
-                      </span>
-                    </td>
-
-                    <td>
-                      <span
-                        className={`students-status students-status-${
-                          user.status === "active" ? "active" : "inactive"
-                        }`}
-                      >
-                        <span />
-                        {user.status}
-                      </span>
-                    </td>
-
-                    <td>
-                      {new Date(user.createdAt).toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </td>
-
-                    <td>
-                      {user.role !== "owner" ? (
-                        <div className="student-actions-cell">
-                          <button
-                            type="button"
-                            className="student-action-btn"
-                            title={
-                              user.status === "active"
-                                ? "Disable account"
-                                : "Activate account"
-                            }
-                            onClick={() => handleToggleStatus(user)}
-                          >
-                            <Power size={13} />
-                          </button>
-
-                          <button
-                            type="button"
-                            className="student-action-btn delete"
-                            title="Remove staff member"
-                            onClick={() => handleDeleteStaff(user)}
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      ) : (
-                        <span style={{ fontSize: "11px", color: "#888" }}>
-                          Primary owner
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <StaffTable
+            staff={staff}
+            onToggleStatus={handleToggleStatus}
+            onDeleteStaff={handleDeleteStaff}
+          />
         )}
       </section>
 
-      {showModal && (
-        <div
-          className="students-modal-backdrop"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) setShowModal(false);
-          }}
-        >
-          <section className="students-modal" style={{ maxWidth: 520 }}>
-            <div className="students-modal-header">
-              <div>
-                <div className="eyebrow">NEW TEAM MEMBER</div>
-                <h2>Add staff member</h2>
-                <p>Grant access to your centre workspace.</p>
-              </div>
-
-              <button
-                type="button"
-                className="students-modal-close"
-                onClick={() => setShowModal(false)}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddStaff}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <label className="students-form-field">
-                  <span>Full name *</span>
-                  <input
-                    name="name"
-                    value={form.name}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, name: e.target.value }))
-                    }
-                    placeholder="e.g. Rahul Sharma"
-                    required
-                  />
-                </label>
-
-                <label className="students-form-field">
-                  <span>Email address *</span>
-                  <input
-                    type="email"
-                    name="email"
-                    value={form.email}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, email: e.target.value }))
-                    }
-                    placeholder="teacher@example.com"
-                    required
-                  />
-                </label>
-
-                <label className="students-form-field">
-                  <span>Temporary Password *</span>
-                  <input
-                    type="password"
-                    name="password"
-                    value={form.password}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, password: e.target.value }))
-                    }
-                    placeholder="At least 6 characters"
-                    minLength={6}
-                    required
-                  />
-                </label>
-
-                <label className="students-form-field">
-                  <span>Role *</span>
-                  <select
-                    name="role"
-                    value={form.role}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, role: e.target.value }))
-                    }
-                  >
-                    <option value="teacher">Teacher (Attendance & Students)</option>
-                    <option value="accountant">Accountant (Fees & Invoicing)</option>
-                    <option value="admin">Administrator (Full Access)</option>
-                  </select>
-                </label>
-              </div>
-
-              <div className="students-modal-actions">
-                <button
-                  type="button"
-                  className="students-secondary-button"
-                  onClick={() => setShowModal(false)}
-                  disabled={saving}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="students-primary-button"
-                  disabled={saving}
-                >
-                  {saving ? (
-                    <LoaderCircle className="students-spinner" size={16} />
-                  ) : null}
-                  {saving ? "Adding member..." : "Add member"}
-                </button>
-              </div>
-            </form>
-          </section>
-        </div>
-      )}
+      <StaffModal
+        isOpen={showModal}
+        form={form}
+        saving={saving}
+        onChange={(e) =>
+          setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
+        }
+        onClose={() => setShowModal(false)}
+        onSubmit={handleAddStaff}
+      />
     </div>
   );
 }

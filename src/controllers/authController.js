@@ -5,6 +5,7 @@ import {
   getAuthenticatedCentre,
   registerCentre,
 } from "@/services/authService";
+import { isSuperAdminAuthorized } from "@/services/superAdminService";
 import {
   createSession,
   destroySession,
@@ -99,6 +100,16 @@ export async function sessionController() {
 }
 
 export async function registerCentreController(request) {
+  if (!isSuperAdminAuthorized(request)) {
+    return Response.json(
+      {
+        success: false,
+        message: "Unauthorized: SaaS Administrator access required to register centres",
+      },
+      { status: 403 }
+    );
+  }
+
   try {
     const body = await request.json();
     const result = await registerCentre(body);

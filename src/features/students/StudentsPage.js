@@ -1,18 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import {
-  Search,
-  Plus,
-  Users,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  LoaderCircle,
-  GraduationCap,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { Plus, LoaderCircle } from "lucide-react";
+import StudentTable from "./components/StudentTable";
+import StudentForm from "./components/StudentForm";
+import StudentToolbar from "./components/StudentToolbar";
+import StudentEmptyState from "./components/StudentEmptyState";
+import Pagination from "@/components/ui/Pagination";
+import NoticeBanner from "@/components/ui/NoticeBanner";
 import "./StudentsPage.css";
 
 const PAGE_SIZE = 10;
@@ -29,20 +24,6 @@ const EMPTY_FORM = {
   status: "active",
   address: "",
 };
-
-function formatDate(value) {
-  if (!value) return "—";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return "—";
-
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
@@ -67,7 +48,7 @@ export default function StudentsPage() {
   const [formError, setFormError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Fetch batches for batch assignment dropdown
+  // Load batches for dropdown selection
   useEffect(() => {
     async function loadBatches() {
       try {
@@ -132,7 +113,6 @@ export default function StudentsPage() {
 
   function updateField(event) {
     const { name, value } = event.target;
-
     setForm((current) => ({
       ...current,
       [name]: value,
@@ -173,7 +153,6 @@ export default function StudentsPage() {
 
   function closeForm() {
     if (saving) return;
-
     setShowForm(false);
     setEditingStudent(null);
     setFormError("");
@@ -194,9 +173,7 @@ export default function StudentsPage() {
 
       const response = await fetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
@@ -258,17 +235,6 @@ export default function StudentsPage() {
     }
   }
 
-  function handleSearchChange(event) {
-    setSearch(event.target.value);
-    setPage(1);
-    setSuccess("");
-  }
-
-  const firstRecord =
-    pagination.total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
-
-  const lastRecord = Math.min(page * PAGE_SIZE, pagination.total);
-
   return (
     <>
       <section className="page-heading students-heading">
@@ -290,431 +256,75 @@ export default function StudentsPage() {
         </button>
       </section>
 
-      {success && (
-        <div className="students-notice students-notice-success" role="status">
-          {success}
-          <button
-            type="button"
-            aria-label="Dismiss message"
-            onClick={() => setSuccess("")}
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
-
-      {error && (
-        <div className="students-notice students-notice-error" role="alert">
-          {error}
-          <button
-            type="button"
-            aria-label="Dismiss message"
-            onClick={() => setError("")}
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
+      <NoticeBanner
+        type="success"
+        message={success}
+        onDismiss={() => setSuccess("")}
+      />
+      <NoticeBanner
+        type="error"
+        message={error}
+        onDismiss={() => setError("")}
+      />
 
       <section className="students-panel">
-        <div className="students-toolbar">
-          <div>
-            <h2>All students</h2>
-            <p className="students-subtitle">
-              {pagination.total}{" "}
-              {pagination.total === 1 ? "student" : "students"} in your centre
-            </p>
-          </div>
-
-          <label className="students-search">
-            <Search size={17} />
-            <input
-              type="search"
-              placeholder="Search students..."
-              value={search}
-              onChange={handleSearchChange}
-              aria-label="Search by name, admission number, or phone"
-            />
-            {search && (
-              <button
-                type="button"
-                aria-label="Clear search"
-                onClick={() => {
-                  setSearch("");
-                  setPage(1);
-                }}
-              >
-                <X size={15} />
-              </button>
-            )}
-          </label>
-        </div>
+        <StudentToolbar
+          total={pagination.total}
+          search={search}
+          onSearchChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+            setSuccess("");
+          }}
+          onClearSearch={() => {
+            setSearch("");
+            setPage(1);
+          }}
+        />
 
         {loading ? (
           <div className="students-state">
             <LoaderCircle className="students-spinner" size={25} />
             <p>Loading student records...</p>
           </div>
-        ) : error ? (
-          <div className="students-state">
-            <div className="students-state-icon">
-              <Users size={23} />
-            </div>
-            <h3>Unable to load students</h3>
-            <p>{error}</p>
-            <button
-              type="button"
-              className="students-secondary-button"
-              onClick={loadStudents}
-            >
-              Try again
-            </button>
-          </div>
-        ) : students.length === 0 ? (
-          <div className="students-state">
-            <div className="students-state-icon">
-              <GraduationCap size={25} />
-            </div>
-            <h3>{search ? "No students found" : "No students yet"}</h3>
-            <p>
-              {search
-                ? "Try another name, admission number, or phone number."
-                : "Add your first student to start managing your records."}
-            </p>
-            {!search && (
-              <button
-                type="button"
-                className="students-secondary-button"
-                onClick={openCreateForm}
-              >
-                <Plus size={16} />
-                Add your first student
-              </button>
-            )}
-          </div>
+        ) : error || students.length === 0 ? (
+          <StudentEmptyState
+            search={search}
+            error={error}
+            onRetry={loadStudents}
+            onAddStudent={openCreateForm}
+          />
         ) : (
           <>
-            <div className="students-table-wrap">
-              <table className="students-table">
-                <thead>
-                  <tr>
-                    <th>Student</th>
-                    <th>Admission no.</th>
-                    <th>Batch</th>
-                    <th>Phone</th>
-                    <th>Admission date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
+            <StudentTable
+              students={students}
+              onEdit={openEditForm}
+              onDelete={handleDeleteStudent}
+              deletingId={deletingId}
+            />
 
-                <tbody>
-                  {students.map((student) => (
-                    <tr key={student._id}>
-                      <td>
-                        <div className="students-person">
-                          <div className="students-avatar">
-                            {(student.name || "?").charAt(0).toUpperCase()}
-                          </div>
-                          <div className="students-person-info">
-                            <span className="students-person-name">
-                              {student.name}
-                            </span>
-                            {student.email && (
-                              <span className="students-person-email">
-                                {student.email}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="students-admission-number">
-                          {student.admissionNumber}
-                        </span>
-                      </td>
-                      <td>
-                        {student.batchId ? (
-                          <span className="student-batch-tag">
-                            {student.batchId.name || "Assigned"}
-                          </span>
-                        ) : (
-                          <span className="student-batch-unassigned">
-                            Unassigned
-                          </span>
-                        )}
-                      </td>
-                      <td>{student.phone}</td>
-                      <td>{formatDate(student.admissionDate)}</td>
-                      <td>
-                        <span
-                          className={`students-status students-status-${student.status}`}
-                        >
-                          <span />
-                          {student.status || "active"}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="student-actions-cell">
-                          <button
-                            type="button"
-                            className="student-action-btn"
-                            title="Edit student"
-                            aria-label={`Edit ${student.name}`}
-                            onClick={() => openEditForm(student)}
-                          >
-                            <Pencil size={13} />
-                          </button>
-
-                          <button
-                            type="button"
-                            className="student-action-btn delete"
-                            title="Delete student"
-                            aria-label={`Delete ${student.name}`}
-                            onClick={() => handleDeleteStudent(student)}
-                            disabled={deletingId === student._id}
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="students-pagination">
-              <span>
-                Showing {firstRecord}–{lastRecord} of {pagination.total}
-              </span>
-
-              <div className="students-pagination-controls">
-                <button
-                  type="button"
-                  aria-label="Previous page"
-                  disabled={page <= 1}
-                  onClick={() => setPage((current) => current - 1)}
-                >
-                  <ChevronLeft size={17} />
-                </button>
-
-                <span>
-                  Page {page} of {Math.max(1, pagination.totalPages)}
-                </span>
-
-                <button
-                  type="button"
-                  aria-label="Next page"
-                  disabled={page >= pagination.totalPages}
-                  onClick={() => setPage((current) => current + 1)}
-                >
-                  <ChevronRight size={17} />
-                </button>
-              </div>
-            </div>
+            <Pagination
+              page={page}
+              totalPages={pagination.totalPages}
+              totalRecords={pagination.total}
+              pageSize={PAGE_SIZE}
+              onPageChange={setPage}
+            />
           </>
         )}
       </section>
 
-      {showForm && (
-        <div
-          className="students-modal-backdrop"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) closeForm();
-          }}
-        >
-          <section
-            className="students-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="students-modal-title"
-          >
-            <div className="students-modal-header">
-              <div>
-                <div className="eyebrow">STUDENT RECORDS</div>
-                <h2 id="students-modal-title">
-                  {editingStudent ? "Edit student" : "Add student"}
-                </h2>
-                <p>Enter the student&apos;s admission details.</p>
-              </div>
-
-              <button
-                type="button"
-                className="students-modal-close"
-                aria-label="Close form"
-                onClick={closeForm}
-                disabled={saving}
-              >
-                <X size={19} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit}>
-              <div className="students-form-grid">
-                <label className="students-form-field">
-                  <span>Student name *</span>
-                  <input
-                    name="name"
-                    value={form.name}
-                    onChange={updateField}
-                    placeholder="Full name"
-                    maxLength={100}
-                    required
-                    minLength={2}
-                  />
-                </label>
-
-                <label className="students-form-field">
-                  <span>Admission number *</span>
-                  <input
-                    name="admissionNumber"
-                    value={form.admissionNumber}
-                    onChange={updateField}
-                    placeholder="e.g. EDM-001"
-                    maxLength={30}
-                    required
-                  />
-                </label>
-
-                <label className="students-form-field">
-                  <span>Assigned batch</span>
-                  <select
-                    name="batchId"
-                    value={form.batchId}
-                    onChange={updateField}
-                  >
-                    <option value="">No batch (Unassigned)</option>
-                    {batches.map((batch) => (
-                      <option key={batch._id} value={batch._id}>
-                        {batch.name} ({batch.courseName})
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="students-form-field">
-                  <span>Phone number *</span>
-                  <input
-                    name="phone"
-                    type="tel"
-                    inputMode="numeric"
-                    value={form.phone}
-                    onChange={updateField}
-                    placeholder="10-digit number"
-                    pattern="[0-9]{10}"
-                    maxLength={10}
-                    required
-                  />
-                </label>
-
-                <label className="students-form-field">
-                  <span>Email address</span>
-                  <input
-                    name="email"
-                    type="email"
-                    value={form.email}
-                    onChange={updateField}
-                    placeholder="student@example.com"
-                  />
-                </label>
-
-                <label className="students-form-field">
-                  <span>Guardian name</span>
-                  <input
-                    name="guardianName"
-                    value={form.guardianName}
-                    onChange={updateField}
-                    placeholder="Parent or guardian"
-                    maxLength={100}
-                  />
-                </label>
-
-                <label className="students-form-field">
-                  <span>Guardian phone</span>
-                  <input
-                    name="guardianPhone"
-                    type="tel"
-                    inputMode="numeric"
-                    value={form.guardianPhone}
-                    onChange={updateField}
-                    placeholder="10-digit number"
-                    pattern="[0-9]{10}"
-                    maxLength={10}
-                  />
-                </label>
-
-                <label className="students-form-field">
-                  <span>Admission date</span>
-                  <input
-                    name="admissionDate"
-                    type="date"
-                    value={form.admissionDate}
-                    onChange={updateField}
-                  />
-                </label>
-
-                <label className="students-form-field">
-                  <span>Status</span>
-                  <select
-                    name="status"
-                    value={form.status}
-                    onChange={updateField}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="completed">Completed</option>
-                  </select>
-                </label>
-
-                <label className="students-form-field students-form-field-full">
-                  <span>Address</span>
-                  <textarea
-                    name="address"
-                    value={form.address}
-                    onChange={updateField}
-                    placeholder="Student address"
-                    rows={3}
-                    maxLength={500}
-                  />
-                </label>
-              </div>
-
-              {formError && (
-                <div className="students-notice students-notice-error" role="alert">
-                  {formError}
-                </div>
-              )}
-
-              <div className="students-modal-actions">
-                <button
-                  type="button"
-                  className="students-secondary-button"
-                  onClick={closeForm}
-                  disabled={saving}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="students-primary-button"
-                  disabled={saving}
-                >
-                  {saving && (
-                    <LoaderCircle className="students-spinner" size={16} />
-                  )}
-                  {saving
-                    ? "Saving..."
-                    : editingStudent
-                    ? "Save changes"
-                    : "Save student"}
-                </button>
-              </div>
-            </form>
-          </section>
-        </div>
-      )}
+      <StudentForm
+        isOpen={showForm}
+        isEditing={Boolean(editingStudent)}
+        form={form}
+        batches={batches}
+        saving={saving}
+        error={formError}
+        onChange={updateField}
+        onClose={closeForm}
+        onSubmit={handleSubmit}
+      />
     </>
   );
 }

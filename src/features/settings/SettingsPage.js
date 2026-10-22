@@ -1,15 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Settings2,
-  Building,
-  User,
-  LoaderCircle,
-  Save,
-  X,
-  Lock,
-} from "lucide-react";
+import { LoaderCircle } from "lucide-react";
+import NoticeBanner from "@/components/ui/NoticeBanner";
+import CentreProfileCard from "./components/CentreProfileCard";
+import UserProfileCard from "./components/UserProfileCard";
 import "./SettingsPage.css";
 
 export default function SettingsPage() {
@@ -34,11 +29,13 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
+    let ignore = false;
     async function fetchSettings() {
       try {
         setLoading(true);
         const res = await fetch("/api/settings", { cache: "no-store" });
         const result = await res.json();
+        if (ignore) return;
         if (!res.ok || !result.success) {
           throw new Error(result.message || "Failed to load settings");
         }
@@ -58,13 +55,20 @@ export default function SettingsPage() {
           newPassword: "",
         });
       } catch (err) {
-        setError(err.message || "Unable to load settings");
+        if (!ignore) {
+          setError(err.message || "Unable to load settings");
+        }
       } finally {
-        setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+        }
       }
     }
 
     fetchSettings();
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   async function handleSaveCentre(e) {
@@ -150,158 +154,30 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {success && (
-        <div className="students-notice students-notice-success" role="status">
-          {success}
-          <button type="button" onClick={() => setSuccess("")}>
-            <X size={16} />
-          </button>
-        </div>
-      )}
+      <NoticeBanner
+        type="success"
+        message={success}
+        onDismiss={() => setSuccess("")}
+      />
+      <NoticeBanner
+        type="error"
+        message={error}
+        onDismiss={() => setError("")}
+      />
 
-      {error && (
-        <div className="students-notice students-notice-error" role="alert">
-          {error}
-          <button type="button" onClick={() => setError("")}>
-            <X size={16} />
-          </button>
-        </div>
-      )}
+      <CentreProfileCard
+        centreForm={centreForm}
+        onChange={setCentreForm}
+        onSubmit={handleSaveCentre}
+        saving={savingCentre}
+      />
 
-      {/* Centre Profile Card */}
-      <section className="settings-card">
-        <div className="settings-card-header">
-          <h2>Coaching Centre Profile</h2>
-          <p>This information is visible across your institute workspace.</p>
-        </div>
-
-        <form onSubmit={handleSaveCentre}>
-          <div className="students-form-grid">
-            <label className="students-form-field">
-              <span>Centre Workspace Name *</span>
-              <input
-                type="text"
-                value={centreForm.name}
-                onChange={(e) =>
-                  setCentreForm((p) => ({ ...p, name: e.target.value }))
-                }
-                required
-              />
-            </label>
-
-            <div className="students-form-field">
-              <span>Workspace Identifier (Slug)</span>
-              <div className="settings-slug-badge">{centreForm.slug}</div>
-              <small style={{ fontSize: "11px", color: "#888" }}>
-                Used by staff to sign in to this workspace.
-              </small>
-            </div>
-
-            <label className="students-form-field">
-              <span>Contact Email</span>
-              <input
-                type="email"
-                value={centreForm.email}
-                onChange={(e) =>
-                  setCentreForm((p) => ({ ...p, email: e.target.value }))
-                }
-                placeholder="contact@centre.com"
-              />
-            </label>
-
-            <label className="students-form-field">
-              <span>Contact Phone</span>
-              <input
-                type="text"
-                value={centreForm.phone}
-                onChange={(e) =>
-                  setCentreForm((p) => ({ ...p, phone: e.target.value }))
-                }
-                placeholder="+91 9876543210"
-              />
-            </label>
-          </div>
-
-          <div className="students-modal-actions" style={{ marginTop: 20 }}>
-            <button
-              type="submit"
-              className="students-primary-button"
-              disabled={savingCentre}
-            >
-              {savingCentre ? (
-                <LoaderCircle className="students-spinner" size={16} />
-              ) : (
-                <Save size={16} />
-              )}
-              {savingCentre ? "Saving..." : "Save centre details"}
-            </button>
-          </div>
-        </form>
-      </section>
-
-      {/* User Account Settings */}
-      <section className="settings-card">
-        <div className="settings-card-header">
-          <h2>Your User Profile</h2>
-          <p>Manage your account name and authentication password.</p>
-        </div>
-
-        <form onSubmit={handleSaveProfile}>
-          <div className="students-form-grid">
-            <label className="students-form-field">
-              <span>Your Name *</span>
-              <input
-                type="text"
-                value={profileForm.name}
-                onChange={(e) =>
-                  setProfileForm((p) => ({ ...p, name: e.target.value }))
-                }
-                required
-              />
-            </label>
-
-            <div className="students-form-field">
-              <span>Account Email & Role</span>
-              <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 4 }}>
-                <span style={{ fontSize: "12px", color: "#444" }}>
-                  {profileForm.email}
-                </span>
-                <span className={`role-pill role-${profileForm.role}`}>
-                  {profileForm.role}
-                </span>
-              </div>
-            </div>
-
-            <label className="students-form-field students-form-field-full">
-              <span>Change Password (Optional)</span>
-              <input
-                type="password"
-                value={profileForm.newPassword}
-                onChange={(e) =>
-                  setProfileForm((p) => ({ ...p, newPassword: e.target.value }))
-                }
-                placeholder="Leave blank to keep current password"
-                minLength={6}
-              />
-            </label>
-          </div>
-
-          <div className="students-modal-actions" style={{ marginTop: 20 }}>
-            <button
-              type="submit"
-              className="students-primary-button"
-              disabled={savingProfile}
-            >
-              {savingProfile ? (
-                <LoaderCircle className="students-spinner" size={16} />
-              ) : (
-                <Save size={16} />
-              )}
-              {savingProfile ? "Updating profile..." : "Update profile"}
-            </button>
-          </div>
-        </form>
-      </section>
+      <UserProfileCard
+        profileForm={profileForm}
+        onChange={setProfileForm}
+        onSubmit={handleSaveProfile}
+        saving={savingProfile}
+      />
     </div>
   );
 }

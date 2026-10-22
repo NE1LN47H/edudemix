@@ -2,18 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  CalendarDays,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  LoaderCircle,
-  X,
-  Layers3,
-  UserCheck,
-  Save,
-  RotateCcw,
-} from "lucide-react";
+import { Layers3 } from "lucide-react";
+import AttendanceFilters from "./components/AttendanceFilters";
+import AttendanceStats from "./components/AttendanceStats";
+import AttendanceTable from "./components/AttendanceTable";
+import NoticeBanner from "@/components/ui/NoticeBanner";
 import "./AttendancePage.css";
 
 export default function AttendancePage() {
@@ -29,13 +22,6 @@ export default function AttendancePage() {
 
   const [students, setStudents] = useState([]);
   const [batchInfo, setBatchInfo] = useState(null);
-  const [summary, setSummary] = useState({
-    present: 0,
-    absent: 0,
-    late: 0,
-    unmarked: 0,
-    percentage: 0,
-  });
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -83,7 +69,6 @@ export default function AttendancePage() {
       const data = result.data;
       setBatchInfo(data.batch);
       setStudents(data.attendance || []);
-      setSummary(data.summary || { present: 0, absent: 0, late: 0, unmarked: 0, percentage: 0 });
     } catch (err) {
       setError(err.message || "Unable to load attendance");
       setStudents([]);
@@ -102,7 +87,6 @@ export default function AttendancePage() {
     return () => clearTimeout(timeout);
   }, [selectedBatchId, selectedDate, loadAttendance]);
 
-  // Update status for a specific student
   function handleStatusChange(studentId, newStatus) {
     setStudents((prev) =>
       prev.map((item) =>
@@ -113,7 +97,6 @@ export default function AttendancePage() {
     );
   }
 
-  // Update remarks for a specific student
   function handleRemarksChange(studentId, remarks) {
     setStudents((prev) =>
       prev.map((item) =>
@@ -122,7 +105,6 @@ export default function AttendancePage() {
     );
   }
 
-  // Mark all students as present
   function markAll(status) {
     setStudents((prev) =>
       prev.map((item) => ({
@@ -132,7 +114,6 @@ export default function AttendancePage() {
     );
   }
 
-  // Calculate dynamic summary stats from state
   const computedSummary = students.reduce(
     (acc, cur) => {
       if (cur.status === "present") acc.present++;
@@ -150,14 +131,12 @@ export default function AttendancePage() {
       ? Math.round(((computedSummary.present + computedSummary.late) / total) * 100)
       : 0;
 
-  // Submit attendance to API
   async function handleSaveAttendance() {
     setSaving(true);
     setError("");
     setSuccess("");
 
     try {
-      // Filter students that have a status set
       const attendancePayload = students
         .filter((s) => s.status !== null)
         .map((s) => ({
@@ -207,83 +186,28 @@ export default function AttendancePage() {
         </div>
       </section>
 
-      {success && (
-        <div className="students-notice students-notice-success" role="status">
-          {success}
-          <button
-            type="button"
-            aria-label="Dismiss message"
-            onClick={() => setSuccess("")}
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
+      <NoticeBanner
+        type="success"
+        message={success}
+        onDismiss={() => setSuccess("")}
+      />
+      <NoticeBanner
+        type="error"
+        message={error}
+        onDismiss={() => setError("")}
+      />
 
-      {error && (
-        <div className="students-notice students-notice-error" role="alert">
-          {error}
-          <button
-            type="button"
-            aria-label="Dismiss message"
-            onClick={() => setError("")}
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
-
-      <div className="attendance-filters-card">
-        <div className="attendance-filter-group">
-          <div className="attendance-field">
-            <label htmlFor="batchSelect">Select batch</label>
-            <select
-              id="batchSelect"
-              className="attendance-select"
-              value={selectedBatchId}
-              onChange={(e) => setSelectedBatchId(e.target.value)}
-              disabled={loadingBatches || batches.length === 0}
-            >
-              {batches.length === 0 ? (
-                <option value="">No batches available</option>
-              ) : (
-                batches.map((batch) => (
-                  <option key={batch._id} value={batch._id}>
-                    {batch.name} ({batch.courseName})
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-
-          <div className="attendance-field">
-            <label htmlFor="dateSelect">Select date</label>
-            <input
-              id="dateSelect"
-              type="date"
-              className="attendance-input"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {students.length > 0 && (
-          <button
-            type="button"
-            className="attendance-save-btn"
-            onClick={handleSaveAttendance}
-            disabled={saving}
-          >
-            {saving ? (
-              <LoaderCircle size={16} className="students-spinner" />
-            ) : (
-              <Save size={16} />
-            )}
-            {saving ? "Saving records..." : "Save attendance"}
-          </button>
-        )}
-      </div>
+      <AttendanceFilters
+        batches={batches}
+        selectedBatchId={selectedBatchId}
+        selectedDate={selectedDate}
+        loadingBatches={loadingBatches}
+        saving={saving}
+        hasStudents={students.length > 0}
+        onBatchChange={setSelectedBatchId}
+        onDateChange={setSelectedDate}
+        onSave={handleSaveAttendance}
+      />
 
       {batches.length === 0 && !loadingBatches ? (
         <div className="panel attendance-empty-box">
@@ -298,223 +222,26 @@ export default function AttendancePage() {
         </div>
       ) : (
         <>
-          <div className="attendance-stats-row">
-            <div className="attendance-stat-box">
-              <span className="attendance-stat-label">Total enrolled</span>
-              <span className="attendance-stat-value">{total}</span>
-            </div>
+          <AttendanceStats
+            total={total}
+            present={computedSummary.present}
+            absent={computedSummary.absent}
+            attendanceRate={attendanceRate}
+          />
 
-            <div className="attendance-stat-box">
-              <span className="attendance-stat-label">Present</span>
-              <span className="attendance-stat-value stat-present">
-                {computedSummary.present}
-              </span>
-            </div>
-
-            <div className="attendance-stat-box">
-              <span className="attendance-stat-label">Absent</span>
-              <span className="attendance-stat-value stat-absent">
-                {computedSummary.absent}
-              </span>
-            </div>
-
-            <div className="attendance-stat-box">
-              <span className="attendance-stat-label">Attendance rate</span>
-              <span className="attendance-stat-value">
-                {attendanceRate}%
-              </span>
-            </div>
-          </div>
-
-          <section className="attendance-roster-panel">
-            <div className="roster-toolbar">
-              <div>
-                <h2 className="roster-toolbar-title">
-                  {batchInfo ? `${batchInfo.name} — Student list` : "Student list"}
-                </h2>
-                <small style={{ color: "#777" }}>
-                  {computedSummary.unmarked > 0
-                    ? `${computedSummary.unmarked} student(s) unmarked`
-                    : "All students marked"}
-                </small>
-              </div>
-
-              {students.length > 0 && (
-                <div className="roster-quick-actions">
-                  <button
-                    type="button"
-                    className="quick-btn"
-                    onClick={() => markAll("present")}
-                  >
-                    <CheckCircle2 size={14} style={{ color: "#166534" }} />
-                    Mark all present
-                  </button>
-
-                  <button
-                    type="button"
-                    className="quick-btn"
-                    onClick={() => markAll("absent")}
-                  >
-                    <XCircle size={14} style={{ color: "#991b1b" }} />
-                    Mark all absent
-                  </button>
-
-                  <button
-                    type="button"
-                    className="quick-btn"
-                    onClick={loadAttendance}
-                    title="Reload saved attendance"
-                  >
-                    <RotateCcw size={14} />
-                    Reset
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {loadingAttendance ? (
-              <div className="students-state">
-                <LoaderCircle className="students-spinner" size={25} />
-                <p>Loading student roster...</p>
-              </div>
-            ) : students.length === 0 ? (
-              <div className="attendance-empty-box">
-                <div className="attendance-empty-icon">
-                  <UserCheck size={24} />
-                </div>
-                <h3>No students in this batch</h3>
-                <p>Assign students to this batch from the Students page.</p>
-                <Link href="/students" className="primary-button">
-                  Assign students
-                </Link>
-              </div>
-            ) : (
-              <div className="attendance-table-wrap">
-                <table className="attendance-table">
-                  <thead>
-                    <tr>
-                      <th>Student</th>
-                      <th>Admission no.</th>
-                      <th>Phone</th>
-                      <th>Attendance status</th>
-                      <th>Remarks</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {students.map((student) => (
-                      <tr key={student.studentId}>
-                        <td>
-                          <div className="students-person">
-                            <div className="students-avatar">
-                              {(student.name || "?").charAt(0).toUpperCase()}
-                            </div>
-                            <span className="students-person-name">
-                              {student.name}
-                            </span>
-                          </div>
-                        </td>
-
-                        <td>
-                          <span className="students-admission-number">
-                            {student.admissionNumber}
-                          </span>
-                        </td>
-
-                        <td>{student.phone || "—"}</td>
-
-                        <td>
-                          <div className="status-pill-group">
-                            <button
-                              type="button"
-                              className={`status-toggle-btn ${
-                                student.status === "present"
-                                  ? "active-present"
-                                  : ""
-                              }`}
-                              onClick={() =>
-                                handleStatusChange(student.studentId, "present")
-                              }
-                            >
-                              Present
-                            </button>
-
-                            <button
-                              type="button"
-                              className={`status-toggle-btn ${
-                                student.status === "late" ? "active-late" : ""
-                              }`}
-                              onClick={() =>
-                                handleStatusChange(student.studentId, "late")
-                              }
-                            >
-                              Late
-                            </button>
-
-                            <button
-                              type="button"
-                              className={`status-toggle-btn ${
-                                student.status === "absent"
-                                  ? "active-absent"
-                                  : ""
-                              }`}
-                              onClick={() =>
-                                handleStatusChange(student.studentId, "absent")
-                              }
-                            >
-                              Absent
-                            </button>
-                          </div>
-                        </td>
-
-                        <td>
-                          <input
-                            type="text"
-                            className="remarks-input"
-                            placeholder="Optional note..."
-                            value={student.remarks || ""}
-                            onChange={(e) =>
-                              handleRemarksChange(
-                                student.studentId,
-                                e.target.value
-                              )
-                            }
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {students.length > 0 && (
-              <div className="roster-footer">
-                <span style={{ fontSize: "11px", color: "#666" }}>
-                  Selected date: {new Date(selectedDate).toLocaleDateString("en-IN", {
-                    weekday: "short",
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </span>
-
-                <button
-                  type="button"
-                  className="attendance-save-btn"
-                  onClick={handleSaveAttendance}
-                  disabled={saving}
-                >
-                  {saving ? (
-                    <LoaderCircle size={16} className="students-spinner" />
-                  ) : (
-                    <Save size={16} />
-                  )}
-                  {saving ? "Saving records..." : "Save attendance"}
-                </button>
-              </div>
-            )}
-          </section>
+          <AttendanceTable
+            students={students}
+            batchInfo={batchInfo}
+            selectedDate={selectedDate}
+            loading={loadingAttendance}
+            saving={saving}
+            unmarkedCount={computedSummary.unmarked}
+            onStatusChange={handleStatusChange}
+            onRemarksChange={handleRemarksChange}
+            onMarkAll={markAll}
+            onReset={loadAttendance}
+            onSave={handleSaveAttendance}
+          />
         </>
       )}
     </div>

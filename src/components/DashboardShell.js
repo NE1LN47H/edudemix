@@ -25,7 +25,7 @@ import LogoutButton from "@/components/layout/LogoutButton";
 const navigation = [
   {
     label: "Overview",
-    href: "/",
+    href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -144,7 +144,7 @@ export default function DashboardShell({ children }) {
       <aside
         className={`sidebar ${sidebarOpen ? "sidebar-open" : ""}`}
       >
-        <Link className="brand" href="/">
+        <Link className="brand" href="/dashboard">
           <span className="brand-mark">
             <GraduationCap size={21} strokeWidth={2.2} />
           </span>

@@ -36,7 +36,7 @@ export default function LoginPage() {
         const data = await response.json();
 
         if (data.authenticated && !cancelled) {
-          router.replace("/");
+          router.replace("/dashboard");
         }
       } catch {
         // Keep the login page available if the check fails.
@@ -79,7 +79,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace("/");
+      router.replace("/dashboard");
       router.refresh();
     } catch {
       setError("Unable to connect. Please try again.");
