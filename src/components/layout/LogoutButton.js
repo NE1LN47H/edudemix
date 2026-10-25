@@ -35,9 +35,12 @@ export default function LogoutButton() {
       className="logout-button"
       onClick={handleLogout}
       disabled={loading}
+      aria-label="Sign out"
     >
       <LogOut size={16} />
-      {loading ? "Signing out..." : "Sign out"}
+      <span className="logout-button-text">
+        {loading ? "Signing out..." : "Sign out"}
+      </span>
     </button>
   );
 }

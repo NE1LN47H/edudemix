@@ -92,6 +92,17 @@ export default function DashboardShell({ children }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [sidebarOpen]);
+
   function isActive(href) {
     if (href === "/") {
       return pathname === "/";
@@ -148,13 +159,28 @@ export default function DashboardShell({ children }) {
       <aside
         className={`sidebar ${sidebarOpen ? "sidebar-open" : ""}`}
       >
-        <Link className="brand" href="/dashboard">
-          <span className="brand-mark">
-            <GraduationCap size={21} strokeWidth={2.2} />
-          </span>
+        <div className="sidebar-brand-row">
+          <Link
+            className="brand"
+            href="/dashboard"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <span className="brand-mark">
+              <GraduationCap size={21} strokeWidth={2.2} />
+            </span>
 
-          <span className="brand-name">edudemix</span>
-        </Link>
+            <span className="brand-name">edudemix</span>
+          </Link>
+
+          <button
+            type="button"
+            className="sidebar-close-btn"
+            aria-label="Close menu"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X size={18} />
+          </button>
+        </div>
 
         <button
           type="button"
@@ -194,7 +220,11 @@ export default function DashboardShell({ children }) {
             <span>Help & support</span>
           </a>
 
-          <Link href="/settings" className="profile-card">
+          <Link
+            href="/settings"
+            className="profile-card"
+            onClick={() => setSidebarOpen(false)}
+          >
             <div className="profile-avatar">{initials}</div>
 
             <div className="profile-copy">

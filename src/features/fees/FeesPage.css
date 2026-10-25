@@ -113,74 +113,125 @@
 
 .fees-table-wrap {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .fees-table {
   width: 100%;
+  min-width: 660px;
   border-collapse: collapse;
   text-align: left;
-  white-space: nowrap;
-}
 
-.fees-table th {
-  padding: 12px 18px;
-  font-size: 10px;
-  font-weight: 600;
-  color: #777;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: #fafafa;
-  border-bottom: 1px solid var(--border);
-}
-
-.fees-table td {
-  padding: 14px 18px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 12px;
-  vertical-align: middle;
-}
-
-.fees-table tbody tr:hover {
-  background: #fcfcfc;
-}
-
-.fee-pay-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  font-size: 11px;
-  font-weight: 500;
-  background: #171717;
-  color: #fff;
-  border: 1px solid #171717;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 140ms ease;
-}
-
-.fee-pay-btn:hover {
-  background: #333333;
-}
-
-.receipt-tag {
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 11px;
-  color: #555;
-  background: #f5f5f5;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-@media (max-width: 900px) {
-  .fees-metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .fees-table th {
+    padding: 12px 18px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #777;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #fafafa;
+    border-bottom: 1px solid var(--border);
   }
-}
 
-@media (max-width: 560px) {
-  .fees-metrics {
-    grid-template-columns: 1fr;
+  .fees-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 12px;
+    vertical-align: middle;
+  }
+
+  .fees-table tbody tr:hover {
+    background: #fcfcfc;
+  }
+
+  .fee-pay-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    background: #171717;
+    color: #fff;
+    border: 1px solid #171717;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 140ms ease;
+  }
+
+  .fee-pay-btn:hover {
+    background: #333333;
+  }
+
+  .receipt-tag {
+    font-family: var(--font-geist-mono), monospace;
+    font-size: 11px;
+    color: #555;
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 900px) {
+    .fees-metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .fees-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 14px 16px;
+      gap: 12px;
+    }
+
+    .fees-filter-tabs {
+      overflow-x: auto;
+      max-width: 100%;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      padding: 4px;
+      scrollbar-width: none;
+    }
+
+    .fees-filter-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .fees-tab-btn {
+      padding: 6px 14px;
+      min-height: 34px;
+    }
+
+    .fees-toolbar .students-search {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      height: 42px;
+    }
+
+    .fees-table th,
+    .fees-table td {
+      padding: 12px 14px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .fees-metrics {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .fees-metric-card {
+      padding: 14px;
+    }
+
+    .fees-metric-card .value {
+      font-size: 22px;
+    }
   }
 }

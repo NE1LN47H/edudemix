@@ -179,3 +179,57 @@
   font-weight: 600;
   color: #0f172a;
 }
+
+.settings-nav-tabs {
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.settings-nav-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 680px) {
+  .settings-card {
+    padding: 20px 16px;
+    border-radius: 10px;
+    gap: 18px;
+  }
+
+  .settings-card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .settings-header-left {
+    align-items: center;
+    gap: 12px;
+  }
+
+  .settings-slug-badge {
+    width: 100%;
+    justify-content: space-between;
+    box-sizing: border-box;
+  }
+
+  .system-info-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-profile-badge {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .settings-tab-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}

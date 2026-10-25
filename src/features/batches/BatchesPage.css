@@ -592,75 +592,12 @@
     grid-column: 1 / -1;
     justify-content: flex-start;
   }
-}
 
-@media (max-width: 700px) {
-  .batches-heading {
-    align-items: flex-start;
-  }
-
-  .batches-toolbar {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 18px;
-  }
-
-  .batches-search {
-    width: 100%;
-  }
-
-  .batch-card {
-    grid-template-columns: 1fr;
-    gap: 17px;
-    padding: 19px 18px;
-  }
-
-  .batch-days {
-    grid-column: auto;
-  }
-
-  .batches-pagination {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 15px 18px;
-  }
-
-  .batches-pagination-controls {
-    align-self: flex-end;
+  .batch-card-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
   }
 }
-
-@media (max-width: 480px) {
-  .batches-heading {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .batches-heading > .batches-primary-button {
-    align-self: flex-start;
-  }
-
-  .batches-form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .batches-form-field-full,
-  .batches-days-field {
-    grid-column: auto;
-  }
-
-  .batches-modal-backdrop {
-    align-items: flex-start;
-    padding: 12px;
-  }
-
-  .batches-modal {
-    max-height: calc(100dvh - 24px);
-    padding: 19px;
-    border-radius: 11px;
-  }
-}
-
 
 .batch-card-actions {
   display: flex;
@@ -673,14 +610,15 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 32px;
-  padding: 0 10px;
+  min-height: 34px;
+  padding: 0 12px;
   color: #404040;
   background: #fff;
   border: 1px solid #e5e5e5;
   border-radius: 7px;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
   transition: background 150ms ease, border-color 150ms ease;
 }
@@ -695,14 +633,15 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 32px;
-  padding: 0 10px;
+  min-height: 34px;
+  padding: 0 12px;
   color: #555;
   background: #fff;
   border: 1px solid #e5e5e5;
   border-radius: 7px;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 150ms ease;
 }
@@ -713,16 +652,120 @@
   border-color: #fecaca;
 }
 
-@media (max-width: 900px) {
-  .batch-card-actions {
-    grid-column: 1 / -1;
+@media (max-width: 680px) {
+  .batches-heading {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .batches-heading > .batches-primary-button {
+    align-self: stretch;
+    width: 100%;
+    min-height: 42px;
+    justify-content: center;
+  }
+
+  .batches-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .batches-search {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    height: 42px;
+  }
+
+  .batch-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 18px 16px;
+  }
+
+  .batch-days {
+    grid-column: auto;
     justify-content: flex-start;
   }
-}
 
-@media (max-width: 700px) {
   .batch-card-actions {
     grid-column: auto;
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 14px;
+    margin-top: 2px;
+  }
+
+  .batch-edit-button,
+  .batch-delete-button {
+    flex: 1;
+    min-height: 40px;
+    justify-content: center;
+  }
+
+  .batches-pagination {
+    align-items: center;
+    flex-direction: column;
+    padding: 14px 16px;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .batches-pagination-controls {
+    align-self: center;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .batches-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .batches-form-field-full,
+  .batches-days-field {
+    grid-column: auto;
+  }
+
+  .batches-modal-backdrop {
+    align-items: center;
+    padding: 12px;
+  }
+
+  .batches-modal {
+    width: 100%;
+    max-height: calc(100dvh - 24px);
+    padding: 20px 16px;
+    border-radius: 12px;
+  }
+
+  .batches-modal-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .batches-modal-actions button,
+  .batches-modal-actions .batches-primary-button,
+  .batches-modal-actions .batches-secondary-button {
+    width: 100%;
+    min-height: 42px;
+    justify-content: center;
+  }
+
+  .batches-day-options {
+    gap: 6px;
+  }
+
+  .batches-day-option {
+    min-width: 44px;
+    min-height: 36px;
   }
 }
 

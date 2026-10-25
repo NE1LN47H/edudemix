@@ -292,23 +292,98 @@
   color: #555;
 }
 
+.attendance-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.attendance-table {
+  width: 100%;
+  min-width: 580px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
 @media (max-width: 768px) {
   .attendance-stats-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .attendance-filters-card {
     flex-direction: column;
     align-items: stretch;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .attendance-filter-group {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .attendance-field {
+    width: 100%;
   }
 
   .attendance-select,
   .attendance-input {
     width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    height: 42px;
+  }
+
+  .attendance-save-btn {
+    width: 100%;
+    min-height: 42px;
+    justify-content: center;
   }
 
   .roster-toolbar {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .roster-quick-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .quick-btn {
+    flex: 1;
+    min-width: 95px;
+    min-height: 34px;
+    justify-content: center;
+    font-size: 11px;
+  }
+
+  .roster-footer {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 16px;
+    gap: 12px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .attendance-stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .attendance-stat-box {
+    padding: 12px 14px;
+  }
+
+  .attendance-stat-value {
+    font-size: 22px;
   }
 }

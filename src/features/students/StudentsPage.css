@@ -512,47 +512,61 @@
   border-top: 1px solid #ededed;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 640px) {
   .students-heading {
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .students-heading > .students-primary-button {
+    align-self: stretch;
+    width: 100%;
+    min-height: 42px;
+    justify-content: center;
   }
 
   .students-toolbar {
     align-items: flex-start;
     flex-direction: column;
-    padding: 18px;
+    padding: 16px;
+    gap: 12px;
   }
 
   .students-search {
     width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
+    height: 42px;
+  }
+
+  .students-table {
+    min-width: 620px;
+  }
+
+  .students-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .students-table th,
   .students-table td {
-    padding-right: 15px;
-    padding-left: 15px;
+    padding-right: 12px;
+    padding-left: 12px;
   }
 
   .students-pagination {
-    align-items: flex-start;
+    align-items: center;
     flex-direction: column;
-    padding: 15px 18px;
+    padding: 14px 16px;
+    gap: 12px;
+    text-align: center;
   }
 
   .students-pagination-controls {
-    align-self: flex-end;
-  }
-}
-
-@media (max-width: 480px) {
-  .students-heading {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .students-heading > .students-primary-button {
-    align-self: flex-start;
+    align-self: center;
   }
 
   .students-form-grid {
@@ -564,14 +578,30 @@
   }
 
   .students-modal-backdrop {
-    align-items: flex-start;
+    align-items: center;
     padding: 12px;
   }
 
   .students-modal {
+    width: 100%;
     max-height: calc(100dvh - 24px);
-    padding: 19px;
-    border-radius: 11px;
+    padding: 20px 16px;
+    border-radius: 12px;
+  }
+
+  .students-modal-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .students-modal-actions button,
+  .students-modal-actions .students-primary-button,
+  .students-modal-actions .students-secondary-button {
+    width: 100%;
+    min-height: 42px;
+    justify-content: center;
   }
 }
 
