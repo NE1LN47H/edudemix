@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { Plus, LoaderCircle } from "lucide-react";
 import StudentTable from "./components/StudentTable";
 import StudentForm from "./components/StudentForm";
@@ -8,6 +8,7 @@ import StudentToolbar from "./components/StudentToolbar";
 import StudentEmptyState from "./components/StudentEmptyState";
 import Pagination from "@/components/ui/Pagination";
 import NoticeBanner from "@/components/ui/NoticeBanner";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 import "./StudentsPage.css";
 
 const PAGE_SIZE = 10;
@@ -40,13 +41,17 @@ export default function StudentsPage() {
     totalPages: 0,
   });
 
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const currentRequestRef = useRef(0);
+  const abortControllerRef = useRef(null);
 
   // Load batches for dropdown selection
   useEffect(() => {
@@ -65,7 +70,15 @@ export default function StudentsPage() {
   }, []);
 
   const loadStudents = useCallback(async () => {
-    setLoading(true);
+    const requestId = ++currentRequestRef.current;
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setIsRefreshing(true);
     setError("");
 
     try {
@@ -78,9 +91,13 @@ export default function StudentsPage() {
       const response = await fetch(`/api/students?${params.toString()}`, {
         method: "GET",
         cache: "no-store",
+        signal: controller.signal,
       });
 
       const result = await response.json();
+
+      // Ignore stale responses
+      if (requestId !== currentRequestRef.current) return;
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Unable to load students.");
@@ -96,10 +113,15 @@ export default function StudentsPage() {
         }
       );
     } catch (err) {
-      setError(err.message || "Something went wrong while loading students.");
-      setStudents([]);
+      if (err.name === "AbortError") return;
+      if (requestId === currentRequestRef.current) {
+        setError(err.message || "Something went wrong while loading students.");
+      }
     } finally {
-      setLoading(false);
+      if (requestId === currentRequestRef.current) {
+        setInitialLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, [search, page]);
 
@@ -282,15 +304,24 @@ export default function StudentsPage() {
           }}
         />
 
-        {loading ? null : error || students.length === 0 ? (
+        {initialLoading ? (
+          <SkeletonTable rows={7} columns={5} />
+        ) : error && students.length === 0 ? (
           <StudentEmptyState
             search={search}
             error={error}
             onRetry={loadStudents}
             onAddStudent={openCreateForm}
           />
+        ) : students.length === 0 ? (
+          <StudentEmptyState
+            search={search}
+            error=""
+            onRetry={loadStudents}
+            onAddStudent={openCreateForm}
+          />
         ) : (
-          <>
+          <div className={`reveal-content ${isRefreshing ? "is-refreshing" : ""}`.trim()}>
             <StudentTable
               students={students}
               onEdit={openEditForm}
@@ -305,7 +336,7 @@ export default function StudentsPage() {
               pageSize={PAGE_SIZE}
               onPageChange={setPage}
             />
-          </>
+          </div>
         )}
       </section>
 

@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { requireAuthenticatedCentre } from "@/controllers/pageController";
 import DashboardShell from "@/components/DashboardShell";
 import BatchesPage from "@/features/batches/BatchesPage";
+import { BatchesPageSkeleton } from "@/components/ui/Skeleton";
 
 async function ProtectedBatches() {
   await requireAuthenticatedCentre();
@@ -16,7 +17,13 @@ async function ProtectedBatches() {
 
 export default function BatchesRoute() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <DashboardShell>
+          <BatchesPageSkeleton />
+        </DashboardShell>
+      }
+    >
       <ProtectedBatches />
     </Suspense>
   );

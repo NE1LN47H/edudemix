@@ -1,6 +1,7 @@
 "use client";
 
 import { Users, GraduationCap, Shield, Calculator } from "lucide-react";
+import AnimatedCounter from "@/components/ui/AnimatedCounter";
 
 export default function StaffMetrics({ staff }) {
   const total = staff.length;
@@ -17,7 +18,9 @@ export default function StaffMetrics({ staff }) {
             <Users size={16} />
           </div>
         </div>
-        <div className="metric-value">{total}</div>
+        <div className="metric-value">
+          <AnimatedCounter value={total} duration={900} />
+        </div>
         <div className="metric-bottom">
           <span className="metric-description">
             Active workspace accounts
@@ -32,7 +35,9 @@ export default function StaffMetrics({ staff }) {
             <GraduationCap size={16} />
           </div>
         </div>
-        <div className="metric-value" style={{ color: "#166534" }}>{teachers}</div>
+        <div className="metric-value" style={{ color: "#166534" }}>
+          <AnimatedCounter value={teachers} duration={900} />
+        </div>
         <div className="metric-bottom">
           <span className="metric-description">
             Course instructors & tutors
@@ -47,7 +52,9 @@ export default function StaffMetrics({ staff }) {
             <Shield size={16} />
           </div>
         </div>
-        <div className="metric-value" style={{ color: "#1e40af" }}>{admins}</div>
+        <div className="metric-value" style={{ color: "#1e40af" }}>
+          <AnimatedCounter value={admins} duration={900} />
+        </div>
         <div className="metric-bottom">
           <span className="metric-description">
             Management & Owner
@@ -62,7 +69,9 @@ export default function StaffMetrics({ staff }) {
             <Calculator size={16} />
           </div>
         </div>
-        <div className="metric-value" style={{ color: "#854d0e" }}>{accountants}</div>
+        <div className="metric-value" style={{ color: "#854d0e" }}>
+          <AnimatedCounter value={accountants} duration={900} />
+        </div>
         <div className="metric-bottom">
           <span className="metric-description">
             Fee ledger managers

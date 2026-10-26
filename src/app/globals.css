@@ -18,6 +18,98 @@
   box-sizing: border-box;
 }
 
+/* ==========================================================================
+   Custom Scrollbar System
+   ========================================================================== */
+
+/* Modern W3C Standard Scrollbar for all elements (Firefox & modern browsers) */
+html,
+body,
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* WebKit-based browsers (Chrome, Edge, Safari, Opera, Brave) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: #64748b;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Compact Scrollbars for Inner Scrollable Areas: Tables, Modals, Lists, Sidebar */
+.table-wrapper,
+.students-table-wrap,
+.fees-table-wrap,
+.attendance-table-wrap,
+.students-modal-body,
+.batch-list,
+.sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.table-wrapper::-webkit-scrollbar,
+.students-table-wrap::-webkit-scrollbar,
+.fees-table-wrap::-webkit-scrollbar,
+.attendance-table-wrap::-webkit-scrollbar,
+.students-modal-body::-webkit-scrollbar,
+.batch-list::-webkit-scrollbar,
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb,
+.students-table-wrap::-webkit-scrollbar-thumb,
+.fees-table-wrap::-webkit-scrollbar-thumb,
+.attendance-table-wrap::-webkit-scrollbar-thumb,
+.students-modal-body::-webkit-scrollbar-thumb,
+.batch-list::-webkit-scrollbar-thumb,
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover,
+.students-table-wrap::-webkit-scrollbar-thumb:hover,
+.fees-table-wrap::-webkit-scrollbar-thumb:hover,
+.attendance-table-wrap::-webkit-scrollbar-thumb:hover,
+.students-modal-body::-webkit-scrollbar-thumb:hover,
+.batch-list::-webkit-scrollbar-thumb:hover,
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -2127,6 +2219,336 @@ input:focus-visible {
     justify-content: center;
     width: 100%;
   }
+/* ==========================================================================
+   Skeleton Loading & Shimmer Effect
+   ========================================================================== */
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: #f1f3f5;
+  border-radius: var(--radius, 6px);
+}
+
+.skeleton-shimmer::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.75) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer 1.7s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  content: "";
+  pointer-events: none;
+}
+
+.skeleton-circle {
+  border-radius: 50% !important;
+  flex-shrink: 0;
+}
+
+.skeleton-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 8px);
+  background: #ffffff;
+  padding: 17px 16px 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-table-wrapper {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.skeleton-table-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.skeleton-table-row:last-child {
+  border-bottom: none;
+}
+
+.skeleton-chart-panel,
+.skeleton-donut-panel {
+  min-height: 380px;
+}
+
+/* ==========================================================================
+   Smooth Content Reveal & Staggered Animations
+   ========================================================================== */
+
+@keyframes revealFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal-content {
+  animation: revealFadeUp 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+.reveal-stagger-1 {
+  animation-delay: 30ms;
+  animation-fill-mode: backwards;
+}
+
+.reveal-stagger-2 {
+  animation-delay: 70ms;
+  animation-fill-mode: backwards;
+}
+
+.reveal-stagger-3 {
+  animation-delay: 110ms;
+  animation-fill-mode: backwards;
+}
+
+.reveal-stagger-4 {
+  animation-delay: 150ms;
+  animation-fill-mode: backwards;
+}
+
+/* Repeated Table Row Staggered Reveal */
+@keyframes rowFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-row {
+  animation: rowFadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  will-change: opacity, transform;
+}
+
+/* Repeated Card Staggered Reveal */
+@keyframes cardFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.stagger-card {
+  animation: cardFadeIn 220ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  will-change: opacity, transform;
+}
+
+/* Background Refresh State: Preserves content during searches & pagination */
+.is-refreshing {
+  opacity: 0.62 !important;
+  pointer-events: none;
+  transition: opacity 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: wait;
+}
+
+.transition-filter {
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+/* Inline Spinner for Actions & Buttons */
+.inline-spinner {
+  display: inline-block;
+  animation: spin 750ms linear infinite;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Animated Counter
+   ========================================================================== */
+
+.animated-counter {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+  transition: color 150ms ease;
+}
+
+/* ==========================================================================
+   Page Routing Loading Indicator & Spinner
+   ========================================================================== */
+
+.route-progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 99999;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+
+.route-progress-bar {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    #171717 0%,
+    #2563eb 50%,
+    #0ea5e9 100%
+  );
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.6), 0 0 4px rgba(14, 165, 233, 0.4);
+  position: relative;
+  will-change: width;
+}
+
+.route-progress-glow {
+  position: absolute;
+  right: 0;
+  top: -2px;
+  bottom: -2px;
+  width: 70px;
+  background: radial-gradient(
+    ellipse at right center,
+    rgba(14, 165, 233, 0.9) 0%,
+    rgba(14, 165, 233, 0) 70%
+  );
+}
+
+.route-spinner-badge {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  z-index: 99998;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 12px;
+  background: rgba(23, 23, 23, 0.94);
+  color: #ffffff;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.1);
+  animation: routeBadgeSlideIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes routeBadgeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.route-spinner-icon {
+  animation: spin 850ms linear infinite;
+  color: #38bdf8;
+}
+
+.breadcrumb-routing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  margin-left: 6px;
+  animation: routeBadgeSlideIn 150ms ease forwards;
+}
+
+/* Page Level Loading Spinner Component */
+.page-loading-spinner-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  width: 100%;
+}
+
+.page-loading-spinner-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.page-loading-spinner-box.with-card {
+  padding: 38px 48px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  min-width: 280px;
+  max-width: 420px;
+}
+
+.page-spinner-animation {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.page-spinner-icon {
+  color: #171717;
+  animation: spin 900ms linear infinite;
+}
+
+.page-spinner-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.page-spinner-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground, #171717);
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.page-spinner-subtitle {
+  font-size: 12px;
+  color: var(--muted, #737373);
+  margin: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

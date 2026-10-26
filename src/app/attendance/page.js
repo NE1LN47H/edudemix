@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import DashboardShell from "@/components/DashboardShell";
 import AttendancePage from "@/features/attendance/AttendancePage";
 import { requireAuthenticatedCentre } from "@/controllers/pageController";
+import { AttendancePageSkeleton } from "@/components/ui/Skeleton";
 
 export const metadata = {
   title: "Attendance | edudemix",
@@ -20,7 +21,13 @@ async function ProtectedAttendance() {
 
 export default function Page() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <DashboardShell>
+          <AttendancePageSkeleton />
+        </DashboardShell>
+      }
+    >
       <ProtectedAttendance />
     </Suspense>
   );

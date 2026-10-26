@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import DashboardShell from "@/components/DashboardShell";
 import OverviewDashboard from "@/features/dashboard/OverviewDashboard";
 import { requireAuthenticatedCentre } from "@/controllers/pageController";
+import { DashboardSkeleton } from "@/components/ui/Skeleton";
 
 export const metadata = {
   title: "Dashboard Overview | edudemix",
@@ -20,7 +21,13 @@ async function ProtectedDashboard() {
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <DashboardShell>
+          <DashboardSkeleton />
+        </DashboardShell>
+      }
+    >
       <ProtectedDashboard />
     </Suspense>
   );

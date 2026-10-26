@@ -2,19 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, CalendarDays, LoaderCircle } from "lucide-react";
+import { Plus, CalendarDays } from "lucide-react";
 import MetricsRow from "./components/MetricsRow";
 import CollectionChart from "./components/CollectionChart";
 import AttendanceDonut from "./components/AttendanceDonut";
 import RecentActivityTable from "./components/RecentActivityTable";
 import ActiveBatchesList from "./components/ActiveBatchesList";
+import { DashboardSkeleton } from "@/components/ui/Skeleton";
 
 export default function OverviewDashboard() {
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchStats() {
       try {
+        setLoading(true);
         const res = await fetch("/api/dashboard/stats", { cache: "no-store" });
         const result = await res.json();
         if (result.success) {
@@ -22,6 +25,8 @@ export default function OverviewDashboard() {
         }
       } catch (err) {
         console.error("Failed to load dashboard overview", err);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -35,6 +40,11 @@ export default function OverviewDashboard() {
     attendanceRate: 0,
     presentToday: 0,
     absentToday: 0,
+    markedToday: 0,
+    totalMarkedEver: 0,
+    overallAttendanceRate: 0,
+    overallPresent: 0,
+    overallAbsent: 0,
     totalCollected: 0,
     totalPending: 0,
     totalInvoiced: 0,
@@ -70,29 +80,42 @@ export default function OverviewDashboard() {
         </div>
       </section>
 
-      {/* KPI Metrics Row */}
-      <MetricsRow metrics={metrics} />
+      {loading ? (
+        <DashboardSkeleton />
+      ) : (
+        <div className="dashboard-content-loaded">
+          {/* KPI Metrics Row with smooth reveal */}
+          <div className="reveal-content reveal-stagger-1">
+            <MetricsRow metrics={metrics} />
+          </div>
 
-      {/* Charts Row */}
-      <section className="content-grid">
-        <CollectionChart
-          totalCollected={metrics.totalCollected}
-          totalInvoiced={metrics.totalInvoiced}
-          collectionBars={collectionBars}
-        />
+          {/* Charts Row with smooth reveal */}
+          <section className="content-grid reveal-content reveal-stagger-2">
+            <CollectionChart
+              totalCollected={metrics.totalCollected}
+              totalInvoiced={metrics.totalInvoiced}
+              collectionBars={collectionBars}
+            />
 
-        <AttendanceDonut
-          attendanceRate={metrics.attendanceRate}
-          presentToday={metrics.presentToday}
-          absentToday={metrics.absentToday}
-        />
-      </section>
+            <AttendanceDonut
+              attendanceRate={metrics.attendanceRate}
+              presentToday={metrics.presentToday}
+              absentToday={metrics.absentToday}
+              markedToday={metrics.markedToday}
+              totalMarkedEver={metrics.totalMarkedEver}
+              overallAttendanceRate={metrics.overallAttendanceRate}
+              overallPresent={metrics.overallPresent}
+              overallAbsent={metrics.overallAbsent}
+            />
+          </section>
 
-      {/* Bottom Grid: Recent Activity & Active Cohorts */}
-      <section className="bottom-grid">
-        <RecentActivityTable recentActivity={recentActivity} />
-        <ActiveBatchesList activeBatches={activeBatches} />
-      </section>
+          {/* Bottom Grid: Recent Activity & Active Cohorts with smooth reveal */}
+          <section className="bottom-grid reveal-content reveal-stagger-3">
+            <RecentActivityTable recentActivity={recentActivity} />
+            <ActiveBatchesList activeBatches={activeBatches} />
+          </section>
+        </div>
+      )}
     </>
   );
 }

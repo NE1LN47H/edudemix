@@ -9,6 +9,7 @@ import {
   UserCheck,
   Save,
 } from "lucide-react";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 
 export default function AttendanceTable({
   students,
@@ -23,8 +24,12 @@ export default function AttendanceTable({
   onReset,
   onSave,
 }) {
-  if (loading) {
-    return null;
+  if (loading && (!students || students.length === 0)) {
+    return (
+      <div className="attendance-roster-panel" style={{ padding: "16px 20px" }}>
+        <SkeletonTable rows={6} columns={5} />
+      </div>
+    );
   }
 
   if (students.length === 0) {
@@ -89,7 +94,7 @@ export default function AttendanceTable({
         </div>
       </div>
 
-      <div className="attendance-table-wrap">
+      <div className={`attendance-table-wrap ${loading ? "is-refreshing" : ""}`.trim()}>
         <table className="attendance-table">
           <thead>
             <tr>
@@ -102,8 +107,12 @@ export default function AttendanceTable({
           </thead>
 
           <tbody>
-            {students.map((student) => (
-              <tr key={student.studentId}>
+            {students.map((student, idx) => (
+              <tr
+                key={student.studentId}
+                className="stagger-row"
+                style={{ animationDelay: `${Math.min(idx * 25, 200)}ms` }}
+              >
                 <td>
                   <div className="students-person">
                     <div className="students-avatar">

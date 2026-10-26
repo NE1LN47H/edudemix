@@ -14,6 +14,7 @@ import {
   CreditCard,
   GraduationCap,
   LayoutDashboard,
+  LoaderCircle,
   Menu,
   Settings2,
   Users,
@@ -72,6 +73,11 @@ export default function DashboardShell({ children }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo, setUserInfo] = useState(null);
+  const [navigatingTo, setNavigatingTo] = useState(null);
+
+  useEffect(() => {
+    setNavigatingTo(null);
+  }, [pathname]);
 
   useEffect(() => {
     let ignore = false;
@@ -115,16 +121,25 @@ export default function DashboardShell({ children }) {
     return items.map((item) => {
       const Icon = item.icon;
       const active = isActive(item.href);
+      const isNavigatingThis = navigatingTo === item.href;
 
       return (
         <Link
           key={item.href}
           href={item.href}
           className={`nav-item ${active ? "nav-active" : ""}`}
-          onClick={() => setSidebarOpen(false)}
+          onClick={() => {
+            setSidebarOpen(false);
+            if (pathname !== item.href) {
+              setNavigatingTo(item.href);
+            }
+          }}
         >
           <Icon size={17} strokeWidth={1.8} />
-          <span>{item.label}</span>
+          <span style={{ flex: 1 }}>{item.label}</span>
+          {isNavigatingThis && (
+            <LoaderCircle size={14} className="route-spinner-icon" />
+          )}
         </Link>
       );
     });
@@ -254,6 +269,13 @@ export default function DashboardShell({ children }) {
             <span className="breadcrumb-current">
               {currentPage}
             </span>
+
+            {navigatingTo && (
+              <span className="breadcrumb-routing-indicator">
+                <LoaderCircle size={13} className="route-spinner-icon" />
+                <span>Loading...</span>
+              </span>
+            )}
           </div>
 
           <div className="topbar-actions">

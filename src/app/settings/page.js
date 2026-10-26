@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import DashboardShell from "@/components/DashboardShell";
 import SettingsPage from "@/features/settings/SettingsPage";
 import { requireAuthenticatedCentre } from "@/controllers/pageController";
+import { SettingsPageSkeleton } from "@/components/ui/Skeleton";
 
 export const metadata = {
   title: "Settings | edudemix",
@@ -20,7 +21,13 @@ async function ProtectedSettings() {
 
 export default function Page() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <DashboardShell>
+          <SettingsPageSkeleton />
+        </DashboardShell>
+      }
+    >
       <ProtectedSettings />
     </Suspense>
   );

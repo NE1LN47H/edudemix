@@ -140,6 +140,9 @@ export async function getFees(
           pendingCount: {
             $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] },
           },
+          overdueCount: {
+            $sum: { $cond: [{ $eq: ["$status", "overdue"] }, 1, 0] },
+          },
         },
       },
     ]),
@@ -151,6 +154,7 @@ export async function getFees(
     paidCount: 0,
     partialCount: 0,
     pendingCount: 0,
+    overdueCount: 0,
   };
 
   stats.totalPending = Math.max(0, stats.totalInvoiced - stats.totalCollected);

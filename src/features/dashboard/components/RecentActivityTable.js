@@ -54,7 +54,11 @@ export default function RecentActivityTable({ recentActivity }) {
               </tr>
             ) : (
               recentActivity.map((item, idx) => (
-                <tr key={item.id}>
+                <tr
+                  key={item.id}
+                  className="stagger-row"
+                  style={{ animationDelay: `${Math.min(idx * 30, 240)}ms` }}
+                >
                   <td>
                     <div className="student-cell">
                       <div

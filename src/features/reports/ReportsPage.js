@@ -7,6 +7,7 @@ import OccupancyReport from "./components/OccupancyReport";
 import FinancialReport from "./components/FinancialReport";
 import AttendanceReport from "./components/AttendanceReport";
 import EnrollmentReport from "./components/EnrollmentReport";
+import { SkeletonMetricsRow, SkeletonChart, SkeletonDonut } from "@/components/ui/Skeleton";
 import "./ReportsPage.css";
 
 export default function ReportsPage() {
@@ -44,7 +45,26 @@ export default function ReportsPage() {
   }, []);
 
   if (loading) {
-    return null;
+    return (
+      <div className="reports-container">
+        <section className="page-heading">
+          <div>
+            <div className="eyebrow">WORKSPACE ANALYTICS</div>
+            <h1>Centre Reports & Insights</h1>
+            <p className="page-description">
+              Comprehensive overview of student enrollment, batch capacities, attendance rates, and revenue.
+            </p>
+          </div>
+        </section>
+
+        <SkeletonMetricsRow count={4} />
+
+        <div className="reports-grid" style={{ marginTop: "20px" }}>
+          <SkeletonChart />
+          <SkeletonDonut />
+        </div>
+      </div>
+    );
   }
 
   if (error || !data) {
@@ -58,7 +78,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="reports-container">
+    <div className="reports-container reveal-content">
       <section className="page-heading">
         <div>
           <div className="eyebrow">WORKSPACE ANALYTICS</div>

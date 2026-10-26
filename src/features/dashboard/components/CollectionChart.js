@@ -1,27 +1,46 @@
 "use client";
 
 import Link from "next/link";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, CreditCard } from "lucide-react";
+import AnimatedCounter from "@/components/ui/AnimatedCounter";
 
-function formatCurrency(amount) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount || 0);
+function formatCompact(val) {
+  if (!val || val <= 0) return "0";
+  if (val >= 10000000) return `${(val / 10000000).toFixed(1)}Cr`;
+  if (val >= 100000) return `${(val / 100000).toFixed(1)}L`;
+  if (val >= 1000) return `${Math.round(val / 1000)}k`;
+  return String(Math.round(val));
 }
 
 export default function CollectionChart({
-  totalCollected,
-  totalInvoiced,
-  collectionBars,
+  totalCollected = 0,
+  totalInvoiced = 0,
+  collectionBars = [],
 }) {
+  const maxAmount = Math.max(
+    ...collectionBars.map((b) => Math.max(b.current || 0, b.previous || 0)),
+    0
+  );
+
+  const roundMax = maxAmount > 0 ? (maxAmount >= 1000 ? Math.ceil(maxAmount / 1000) * 1000 : maxAmount) : 0;
+  const gridSteps = roundMax > 0
+    ? [
+        formatCompact(roundMax),
+        formatCompact(roundMax * 0.75),
+        formatCompact(roundMax * 0.5),
+        formatCompact(roundMax * 0.25),
+        "0",
+      ]
+    : ["—", "—", "—", "—", "0"];
+
+  const hasAnyData = totalCollected > 0 || totalInvoiced > 0 || maxAmount > 0;
+
   return (
     <div className="panel collection-panel">
       <div className="panel-header">
         <div>
           <h2>Fee Collections & Trends</h2>
-          <p>Monthly fee inflow comparison across academic terms</p>
+          <p>Monthly fee inflow vs invoiced amounts</p>
         </div>
         <Link href="/fees" className="select-button">
           View all fees
@@ -31,57 +50,97 @@ export default function CollectionChart({
       <div className="chart-summary">
         <div>
           <div className="chart-total">
-            {formatCurrency(totalCollected)}
+            <AnimatedCounter value={totalCollected} isCurrency duration={1200} />
           </div>
           <div className="chart-subtitle">
-            <span className="positive-text">
-              <TrendingUp size={13} /> Current Term
+            {totalCollected > 0 ? (
+              <span className="positive-text">
+                <TrendingUp size={13} /> Realized collections
+              </span>
+            ) : (
+              <span style={{ color: "#737373" }}>
+                <CreditCard size={13} style={{ verticalAlign: "middle", display: "inline" }} /> Total collected
+              </span>
+            )}
+            <span>
+              • Invoiced: <AnimatedCounter value={totalInvoiced} isCurrency duration={1200} />
             </span>
-            <span>• Invoiced: {formatCurrency(totalInvoiced)}</span>
           </div>
         </div>
 
         <div className="chart-legend">
           <span className="legend-dot current" />
-          <span>Current</span>
+          <span>Collected</span>
           <span className="legend-dot previous" />
-          <span>Previous</span>
+          <span>Invoiced</span>
         </div>
       </div>
 
-      <div className="chart">
+      <div className="chart" style={{ position: "relative" }}>
         <div className="chart-gridlines">
-          <div><span>80k</span></div>
-          <div><span>60k</span></div>
-          <div><span>40k</span></div>
-          <div><span>20k</span></div>
-          <div><span>0</span></div>
-        </div>
-
-        <div className="chart-bars">
-          {(collectionBars || [
-            { month: "May", heightPercent: 35 },
-            { month: "Jun", heightPercent: 55 },
-            { month: "Jul", heightPercent: 70 },
-            { month: "Aug", heightPercent: 85 },
-            { month: "Sep", heightPercent: 65 },
-            { month: "Oct", heightPercent: 95 },
-          ]).map((bar) => (
-            <div key={bar.month} className="bar-group">
-              <div className="bar-pair">
-                <div
-                  className="bar previous-bar"
-                  style={{ height: `${Math.max(10, bar.heightPercent * 0.75)}%` }}
-                />
-                <div
-                  className="bar current-bar"
-                  style={{ height: `${bar.heightPercent}%` }}
-                />
-              </div>
-              <span className="bar-label">{bar.month}</span>
+          {gridSteps.map((step, idx) => (
+            <div key={idx}>
+              <span>{step}</span>
             </div>
           ))}
         </div>
+
+        <div className="chart-bars">
+          {collectionBars.map((bar) => {
+            const hasValues = (bar.current || 0) > 0 || (bar.previous || 0) > 0;
+            return (
+              <div
+                key={bar.month}
+                className="bar-group"
+                title={`${bar.month}: Collected ₹${(bar.current || 0).toLocaleString("en-IN")}, Invoiced ₹${(bar.previous || 0).toLocaleString("en-IN")}`}
+              >
+                <div className="bar-pair">
+                  <div
+                    className="bar previous-bar"
+                    style={{
+                      height: `${bar.invoicedHeightPercent || 0}%`,
+                      opacity: bar.invoicedHeightPercent > 0 ? 1 : 0.2,
+                    }}
+                  />
+                  <div
+                    className="bar current-bar"
+                    style={{
+                      height: `${bar.heightPercent || 0}%`,
+                      opacity: bar.heightPercent > 0 ? 1 : 0.2,
+                    }}
+                  />
+                </div>
+                <span className="bar-label">{bar.month}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {!hasAnyData && (
+          <div
+            style={{
+              position: "absolute",
+              inset: "40px 20px 30px 40px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              background: "rgba(255, 255, 255, 0.75)",
+              backdropFilter: "blur(2px)",
+              borderRadius: "8px",
+              textAlign: "center",
+              padding: "16px",
+              pointerEvents: "none",
+            }}
+          >
+            <p style={{ margin: "0 0 6px 0", fontSize: "13px", fontWeight: 600, color: "#171717" }}>
+              No collections recorded yet
+            </p>
+            <p style={{ margin: 0, fontSize: "11px", color: "#737373", maxWidth: "260px" }}>
+              Invoices and recorded student fee payments will appear here in the monthly trend chart.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

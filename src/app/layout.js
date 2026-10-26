@@ -1,4 +1,5 @@
 import "./globals.css";
+import RouteProgressBar from "@/components/ui/RouteProgressBar";
 
 export const metadata = {
   title: "edudemix — Coaching Centre Management",
@@ -16,7 +17,10 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <RouteProgressBar />
+        {children}
+      </body>
     </html>
   );
 }

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import DashboardShell from "@/components/DashboardShell";
 import TeachersPage from "@/features/teachers/TeachersPage";
 import { requireAuthenticatedCentre } from "@/controllers/pageController";
+import { TeachersPageSkeleton } from "@/components/ui/Skeleton";
 
 export const metadata = {
   title: "Teachers & Staff | edudemix",
@@ -20,7 +21,13 @@ async function ProtectedTeachers() {
 
 export default function Page() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <DashboardShell>
+          <TeachersPageSkeleton />
+        </DashboardShell>
+      }
+    >
       <ProtectedTeachers />
     </Suspense>
   );

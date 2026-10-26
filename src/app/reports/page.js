@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import DashboardShell from "@/components/DashboardShell";
 import ReportsPage from "@/features/reports/ReportsPage";
 import { requireAuthenticatedCentre } from "@/controllers/pageController";
+import { ReportsPageSkeleton } from "@/components/ui/Skeleton";
 
 export const metadata = {
   title: "Reports & Analytics | edudemix",
@@ -20,7 +21,13 @@ async function ProtectedReports() {
 
 export default function Page() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <DashboardShell>
+          <ReportsPageSkeleton />
+        </DashboardShell>
+      }
+    >
       <ProtectedReports />
     </Suspense>
   );

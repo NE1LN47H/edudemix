@@ -22,8 +22,12 @@ export default function ActiveBatchesList({ activeBatches }) {
             No active batches found.
           </p>
         ) : (
-          activeBatches.map((batch) => (
-            <div key={batch._id} className="batch-item">
+          activeBatches.map((batch, idx) => (
+            <div
+              key={batch._id}
+              className="batch-item stagger-card"
+              style={{ animationDelay: `${Math.min(idx * 35, 240)}ms` }}
+            >
               <div className="batch-title-row">
                 <div className="batch-symbol">
                   <BookOpen size={16} />

@@ -7,14 +7,7 @@ import {
   CreditCard,
   TrendingUp,
 } from "lucide-react";
-
-function formatCurrency(amount) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount || 0);
-}
+import AnimatedCounter from "@/components/ui/AnimatedCounter";
 
 export default function MetricsRow({ metrics }) {
   return (
@@ -26,14 +19,16 @@ export default function MetricsRow({ metrics }) {
             <Users size={16} />
           </div>
         </div>
-        <div className="metric-value">{metrics.totalStudents}</div>
+        <div className="metric-value">
+          <AnimatedCounter value={metrics.totalStudents} duration={1000} />
+        </div>
         <div className="metric-bottom">
           <span className="metric-change up">
             <TrendingUp size={12} />
             Active
           </span>
           <span className="metric-description">
-            {metrics.activeStudents} enrolled in courses
+            <AnimatedCounter value={metrics.activeStudents} duration={900} /> enrolled in courses
           </span>
         </div>
       </div>
@@ -45,7 +40,9 @@ export default function MetricsRow({ metrics }) {
             <BookOpen size={16} />
           </div>
         </div>
-        <div className="metric-value">{metrics.activeBatches}</div>
+        <div className="metric-value">
+          <AnimatedCounter value={metrics.activeBatches} duration={900} />
+        </div>
         <div className="metric-bottom">
           <span className="metric-description">Running course cohorts</span>
         </div>
@@ -53,15 +50,37 @@ export default function MetricsRow({ metrics }) {
 
       <div className="metric-card">
         <div className="metric-top">
-          <span className="metric-label">TODAY&apos;S ATTENDANCE</span>
+          <span className="metric-label">
+            {metrics.markedToday > 0
+              ? "TODAY'S ATTENDANCE"
+              : metrics.totalMarkedEver > 0
+              ? "OVERALL ATTENDANCE"
+              : "TODAY'S ATTENDANCE"}
+          </span>
           <div className="metric-icon">
             <CalendarDays size={16} />
           </div>
         </div>
-        <div className="metric-value">{metrics.attendanceRate}%</div>
+        <div className="metric-value">
+          <AnimatedCounter
+            value={metrics.markedToday > 0 ? metrics.attendanceRate : (metrics.totalMarkedEver > 0 ? metrics.overallAttendanceRate : 0)}
+            suffix="%"
+            duration={1100}
+          />
+        </div>
         <div className="metric-bottom">
           <span className="metric-description">
-            {metrics.presentToday} present today
+            {metrics.markedToday > 0 ? (
+              <>
+                <AnimatedCounter value={metrics.presentToday} duration={1000} /> present of {metrics.markedToday} today
+              </>
+            ) : metrics.totalMarkedEver > 0 ? (
+              <>
+                Overall across all recorded sessions
+              </>
+            ) : (
+              "No attendance recorded yet"
+            )}
           </span>
         </div>
       </div>
@@ -74,14 +93,15 @@ export default function MetricsRow({ metrics }) {
           </div>
         </div>
         <div className="metric-value">
-          {formatCurrency(metrics.totalCollected)}
+          <AnimatedCounter value={metrics.totalCollected || 0} isCurrency duration={1200} />
         </div>
         <div className="metric-bottom">
           <span className="metric-description">
-            Pending dues: {formatCurrency(metrics.totalPending)}
+            Pending dues: <AnimatedCounter value={metrics.totalPending || 0} isCurrency duration={1200} />
           </span>
         </div>
       </div>
     </section>
   );
 }
+

@@ -45,10 +45,14 @@ export default function FeeTable({
         </thead>
 
         <tbody>
-          {fees.map((fee) => {
+          {fees.map((fee, idx) => {
             const balance = Math.max(0, fee.amount - (fee.paidAmount || 0));
             return (
-              <tr key={fee._id}>
+              <tr
+                key={fee._id}
+                className="stagger-row"
+                style={{ animationDelay: `${Math.min(idx * 28, 200)}ms` }}
+              >
                 <td>
                   <div className="students-person">
                     <div className="students-avatar">

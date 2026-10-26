@@ -6,6 +6,7 @@ import StaffMetrics from "./components/StaffMetrics";
 import StaffTable from "./components/StaffTable";
 import StaffModal from "./components/StaffModal";
 import NoticeBanner from "@/components/ui/NoticeBanner";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 import "./TeachersPage.css";
 
 const EMPTY_STAFF_FORM = {
@@ -219,7 +220,9 @@ export default function TeachersPage() {
           </div>
         </div>
 
-        {loading ? null : filteredStaff.length === 0 ? (
+        {loading ? (
+          <SkeletonTable rows={5} columns={4} />
+        ) : filteredStaff.length === 0 ? (
           <div className="students-state">
             <div className="students-state-icon">
               <GraduationCap size={24} />
@@ -230,11 +233,13 @@ export default function TeachersPage() {
             </p>
           </div>
         ) : (
-          <StaffTable
-            staff={filteredStaff}
-            onToggleStatus={handleToggleStatus}
-            onDeleteStaff={handleDeleteStaff}
-          />
+          <div className="reveal-content transition-filter" key={roleFilter}>
+            <StaffTable
+              staff={filteredStaff}
+              onToggleStatus={handleToggleStatus}
+              onDeleteStaff={handleDeleteStaff}
+            />
+          </div>
         )}
       </section>
 

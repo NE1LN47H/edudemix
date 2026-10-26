@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { Plus, CreditCard, LoaderCircle } from "lucide-react";
 import FeeMetrics from "./components/FeeMetrics";
 import FeeToolbar from "./components/FeeToolbar";
@@ -9,6 +9,7 @@ import FeeInvoiceModal from "./components/FeeInvoiceModal";
 import FeePaymentModal from "./components/FeePaymentModal";
 import Pagination from "@/components/ui/Pagination";
 import NoticeBanner from "@/components/ui/NoticeBanner";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 import "./FeesPage.css";
 
 const PAGE_SIZE = 10;
@@ -54,9 +55,13 @@ export default function FeesPage() {
     pendingCount: 0,
   });
 
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const currentRequestRef = useRef(0);
+  const abortControllerRef = useRef(null);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [feeForm, setFeeForm] = useState(EMPTY_FEE_FORM);
@@ -89,7 +94,15 @@ export default function FeesPage() {
   }, []);
 
   const loadFees = useCallback(async () => {
-    setLoading(true);
+    const requestId = ++currentRequestRef.current;
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setIsRefreshing(true);
     setError("");
 
     try {
@@ -102,8 +115,11 @@ export default function FeesPage() {
 
       const response = await fetch(`/api/fees?${params.toString()}`, {
         cache: "no-store",
+        signal: controller.signal,
       });
       const result = await response.json();
+
+      if (requestId !== currentRequestRef.current) return;
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to load fee records");
@@ -113,10 +129,15 @@ export default function FeesPage() {
       if (result.stats) setStats(result.stats);
       if (result.pagination) setPagination(result.pagination);
     } catch (err) {
-      setError(err.message || "Error loading fee records");
-      setFees([]);
+      if (err.name === "AbortError") return;
+      if (requestId === currentRequestRef.current) {
+        setError(err.message || "Error loading fee records");
+      }
     } finally {
-      setLoading(false);
+      if (requestId === currentRequestRef.current) {
+        setInitialLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, [search, statusFilter, page]);
 
@@ -273,7 +294,24 @@ export default function FeesPage() {
           }}
         />
 
-        {loading ? null : fees.length === 0 ? (
+        {initialLoading ? (
+          <SkeletonTable rows={7} columns={6} />
+        ) : error && fees.length === 0 ? (
+          <div className="students-state">
+            <div className="students-state-icon">
+              <CreditCard size={24} />
+            </div>
+            <h3>Unable to load fees</h3>
+            <p>{error}</p>
+            <button
+              type="button"
+              className="students-secondary-button"
+              onClick={loadFees}
+            >
+              Try again
+            </button>
+          </div>
+        ) : fees.length === 0 ? (
           <div className="students-state">
             <div className="students-state-icon">
               <CreditCard size={24} />
@@ -290,7 +328,7 @@ export default function FeesPage() {
             </button>
           </div>
         ) : (
-          <>
+          <div className={`reveal-content ${isRefreshing ? "is-refreshing" : ""}`.trim()}>
             <FeeTable
               fees={fees}
               onOpenPayment={openPaymentModal}
@@ -304,7 +342,7 @@ export default function FeesPage() {
               pageSize={PAGE_SIZE}
               onPageChange={setPage}
             />
-          </>
+          </div>
         )}
       </section>
 

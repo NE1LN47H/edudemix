@@ -1,6 +1,7 @@
 "use client";
 
 import { Users, BookOpen, CalendarCheck2, CreditCard } from "lucide-react";
+import AnimatedCounter from "@/components/ui/AnimatedCounter";
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat("en-IN", {
@@ -20,10 +21,12 @@ export default function ReportMetrics({ data }) {
             <Users size={16} />
           </div>
         </div>
-        <div className="metric-value">{data.students.total}</div>
+        <div className="metric-value">
+          <AnimatedCounter value={data.students.total} duration={1000} />
+        </div>
         <div className="metric-bottom">
           <span className="metric-description">
-            {data.students.active} actively enrolled
+            <AnimatedCounter value={data.students.active} duration={900} /> actively enrolled
           </span>
         </div>
       </div>
@@ -35,7 +38,9 @@ export default function ReportMetrics({ data }) {
             <BookOpen size={16} />
           </div>
         </div>
-        <div className="metric-value">{data.batches.total}</div>
+        <div className="metric-value">
+          <AnimatedCounter value={data.batches.total} duration={900} />
+        </div>
         <div className="metric-bottom">
           <span className="metric-description">
             Running course cohorts
@@ -50,10 +55,12 @@ export default function ReportMetrics({ data }) {
             <CalendarCheck2 size={16} />
           </div>
         </div>
-        <div className="metric-value">{data.attendance.rate}%</div>
+        <div className="metric-value">
+          <AnimatedCounter value={data.attendance.rate} suffix="%" duration={1100} />
+        </div>
         <div className="metric-bottom">
           <span className="metric-description">
-            {data.attendance.totalMarked} records logged
+            <AnimatedCounter value={data.attendance.totalMarked} duration={1000} /> records logged
           </span>
         </div>
       </div>
@@ -66,11 +73,11 @@ export default function ReportMetrics({ data }) {
           </div>
         </div>
         <div className="metric-value" style={{ color: "#166534" }}>
-          {data.finances.collectionRate}%
+          <AnimatedCounter value={data.finances.collectionRate} suffix="%" duration={1100} />
         </div>
         <div className="metric-bottom">
           <span className="metric-description">
-            {formatCurrency(data.finances.totalCollected)} collected
+            <AnimatedCounter value={data.finances.totalCollected} isCurrency duration={1200} /> collected
           </span>
         </div>
       </div>

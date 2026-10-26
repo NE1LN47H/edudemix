@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { Plus, Layers3, LoaderCircle } from "lucide-react";
 import BatchCard from "./components/BatchCard";
 import BatchForm from "./components/BatchForm";
 import BatchToolbar from "./components/BatchToolbar";
 import Pagination from "@/components/ui/Pagination";
 import NoticeBanner from "@/components/ui/NoticeBanner";
+import { Skeleton } from "@/components/ui/Skeleton";
 import "./BatchesPage.css";
 
 const PAGE_SIZE = 10;
@@ -37,7 +38,8 @@ export default function BatchesPage() {
     totalPages: 0,
   });
 
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -45,8 +47,23 @@ export default function BatchesPage() {
   const [formError, setFormError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const loadBatches = useCallback(async () => {
-    setLoading(true);
+  const abortControllerRef = useRef(null);
+  const currentRequestRef = useRef(0);
+  const isFirstMount = useRef(true);
+
+  const loadBatches = useCallback(async (isBackground = false) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    const requestId = ++currentRequestRef.current;
+
+    if (isBackground) {
+      setIsRefreshing(true);
+    } else {
+      setInitialLoading(true);
+    }
     setError("");
 
     try {
@@ -59,9 +76,12 @@ export default function BatchesPage() {
       const response = await fetch(`/api/batches?${params.toString()}`, {
         method: "GET",
         cache: "no-store",
+        signal: controller.signal,
       });
 
       const result = await response.json();
+
+      if (requestId !== currentRequestRef.current) return;
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Unable to load batches.");
@@ -77,16 +97,29 @@ export default function BatchesPage() {
         }
       );
     } catch (err) {
+      if (err.name === "AbortError" || requestId !== currentRequestRef.current) {
+        return;
+      }
       setError(err.message || "Something went wrong while loading batches.");
       setBatches([]);
     } finally {
-      setLoading(false);
+      if (requestId === currentRequestRef.current) {
+        setInitialLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, [search, page]);
 
   useEffect(() => {
+    const isFirst = isFirstMount.current;
+    if (isFirst) {
+      isFirstMount.current = false;
+      loadBatches(false);
+      return;
+    }
+
     const timeout = setTimeout(() => {
-      loadBatches();
+      loadBatches(true);
     }, 250);
 
     return () => clearTimeout(timeout);
@@ -284,7 +317,24 @@ export default function BatchesPage() {
           }}
         />
 
-        {loading ? null : error ? (
+        {initialLoading ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(310px, 1fr))", gap: "16px", padding: "16px 0" }}>
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="panel" style={{ padding: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
+                  <Skeleton width="55%" height="18px" borderRadius="4px" />
+                  <Skeleton width="55px" height="20px" borderRadius="10px" />
+                </div>
+                <Skeleton width="80%" height="12px" borderRadius="3px" style={{ marginBottom: "16px" }} />
+                <Skeleton width="100%" height="6px" borderRadius="3px" style={{ marginBottom: "16px" }} />
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <Skeleton width="70px" height="12px" borderRadius="3px" />
+                  <Skeleton width="80px" height="12px" borderRadius="3px" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : error && batches.length === 0 ? (
           <div className="batches-state">
             <div className="batches-state-icon">
               <Layers3 size={24} />
@@ -294,7 +344,7 @@ export default function BatchesPage() {
             <button
               type="button"
               className="batches-secondary-button"
-              onClick={loadBatches}
+              onClick={() => loadBatches(false)}
             >
               Try again
             </button>
@@ -322,12 +372,13 @@ export default function BatchesPage() {
             )}
           </div>
         ) : (
-          <>
+          <div className={`reveal-content ${isRefreshing ? "is-refreshing" : ""}`.trim()}>
             <div className="batches-list">
-              {batches.map((batch) => (
+              {batches.map((batch, idx) => (
                 <BatchCard
                   key={batch._id}
                   batch={batch}
+                  index={idx}
                   onEdit={openEditForm}
                   onDelete={handleDeleteBatch}
                 />
@@ -341,7 +392,7 @@ export default function BatchesPage() {
               pageSize={PAGE_SIZE}
               onPageChange={setPage}
             />
-          </>
+          </div>
         )}
       </section>
 

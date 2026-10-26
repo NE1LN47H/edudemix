@@ -35,8 +35,12 @@ export default function StudentTable({
         </thead>
 
         <tbody>
-          {students.map((student) => (
-            <tr key={student._id}>
+          {students.map((student, idx) => (
+            <tr
+              key={student._id}
+              className="stagger-row"
+              style={{ animationDelay: `${Math.min(idx * 28, 200)}ms` }}
+            >
               <td>
                 <div className="students-person">
                   <div className="students-avatar">

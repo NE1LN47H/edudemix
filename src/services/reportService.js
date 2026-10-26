@@ -47,6 +47,7 @@ export async function getReportsData(centreId) {
           paidCount: { $sum: { $cond: [{ $eq: ["$status", "paid"] }, 1, 0] } },
           pendingCount: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
           partialCount: { $sum: { $cond: [{ $eq: ["$status", "partial"] }, 1, 0] } },
+          overdueCount: { $sum: { $cond: [{ $eq: ["$status", "overdue"] }, 1, 0] } },
         },
       },
     ]),
@@ -109,6 +110,7 @@ export async function getReportsData(centreId) {
     paidCount: 0,
     pendingCount: 0,
     partialCount: 0,
+    overdueCount: 0,
   };
   const totalPending = Math.max(0, feeStats.totalInvoiced - feeStats.totalCollected);
 

@@ -48,8 +48,12 @@ export default function StaffTable({
         </thead>
 
         <tbody>
-          {staff.map((user) => (
-            <tr key={user._id}>
+          {staff.map((user, idx) => (
+            <tr
+              key={user._id}
+              className="stagger-row"
+              style={{ animationDelay: `${Math.min(idx * 30, 240)}ms` }}
+            >
               <td>
                 <div className="students-person">
                   <div className={`students-avatar ${getAvatarClass(user.role)}`}>

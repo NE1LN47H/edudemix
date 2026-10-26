@@ -33,9 +33,12 @@ function formatTime(value) {
   });
 }
 
-export default function BatchCard({ batch, onEdit, onDelete }) {
+export default function BatchCard({ batch, onEdit, onDelete, index = 0 }) {
   return (
-    <article className="batch-card">
+    <article
+      className="batch-card stagger-card"
+      style={{ animationDelay: `${Math.min(index * 35, 240)}ms` }}
+    >
       <div className="batch-card-main">
         <div className="batch-icon">
           <Layers3 size={20} />

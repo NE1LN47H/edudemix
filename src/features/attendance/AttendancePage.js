@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Layers3 } from "lucide-react";
 import AttendanceFilters from "./components/AttendanceFilters";
@@ -25,6 +25,9 @@ export default function AttendancePage() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const abortControllerRef = useRef(null);
+  const currentRequestRef = useRef(0);
 
   // Load batches on component mount
   useEffect(() => {
@@ -51,6 +54,13 @@ export default function AttendancePage() {
   const loadAttendance = useCallback(async () => {
     if (!selectedBatchId) return;
 
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    const requestId = ++currentRequestRef.current;
+
     setLoadingAttendance(true);
     setError("");
     setSuccess("");
@@ -58,9 +68,11 @@ export default function AttendancePage() {
     try {
       const res = await fetch(
         `/api/attendance?batchId=${selectedBatchId}&date=${selectedDate}`,
-        { cache: "no-store" }
+        { cache: "no-store", signal: controller.signal }
       );
       const result = await res.json();
+
+      if (requestId !== currentRequestRef.current) return;
 
       if (!res.ok || !result.success) {
         throw new Error(result.message || "Failed to load attendance records");
@@ -70,10 +82,15 @@ export default function AttendancePage() {
       setBatchInfo(data.batch);
       setStudents(data.attendance || []);
     } catch (err) {
+      if (err.name === "AbortError" || requestId !== currentRequestRef.current) {
+        return;
+      }
       setError(err.message || "Unable to load attendance");
       setStudents([]);
     } finally {
-      setLoadingAttendance(false);
+      if (requestId === currentRequestRef.current) {
+        setLoadingAttendance(false);
+      }
     }
   }, [selectedBatchId, selectedDate]);
 
